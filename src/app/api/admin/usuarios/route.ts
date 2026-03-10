@@ -31,23 +31,31 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const roleParam = searchParams.get("role");
 
-  const baseOptions = {
-    orderBy: { createdAt: "desc" as const },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      barbeariaId: true,
-      createdAt: true,
-      barbearia: { select: { id: true, name: true } },
-    },
+  const selectFields = {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    barbeariaId: true,
+    createdAt: true,
+    barbearia: { select: { id: true, name: true } },
   };
 
-  const usuarios = isValidRole(roleParam)
-    ? await prisma.user.findMany({ where: { role: roleParam }, ...baseOptions })
-    : await prisma.user.findMany({ where: {}, ...baseOptions });
+  if (isValidRole(roleParam)) {
+    const role: Role = roleParam;
+    const usuarios = await prisma.user.findMany({
+      where: { role },
+      orderBy: { createdAt: "desc" },
+      select: selectFields,
+    });
+    return NextResponse.json(usuarios);
+  }
 
+  const usuarios = await prisma.user.findMany({
+    where: {},
+    orderBy: { createdAt: "desc" },
+    select: selectFields,
+  });
   return NextResponse.json(usuarios);
 }
 
