@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+
+const validRoles: Role[] = ["admin", "barbearia", "profissional", "cliente"];
 
 const createUsuarioSchema = z.object({
   name: z.string().min(1, "Nome obrigatório"),
@@ -22,10 +25,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
   const { searchParams } = new URL(request.url);
-  const role = searchParams.get("role") as string | null;
-  const where = role && ["admin", "barbearia", "profissional", "cliente"].includes(role)
-    ? { role }
-    : {};
+  const roleParam = searchParams.get("role");
+  const where =
+    roleParam && validRoles.includes(roleParam as Role)
+      ? { role: roleParam as Role }
+      : {};
   const usuarios = await prisma.user.findMany({
     where,
     orderBy: { createdAt: "desc" },
