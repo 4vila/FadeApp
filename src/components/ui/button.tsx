@@ -53,7 +53,7 @@ function Button({
   if (asChild && typeof (props as { children?: React.ReactNode }).children === "object") {
     const child = (props as { children: React.ReactElement }).children;
     return React.cloneElement(child, {
-      ...child.props,
+      ...(child.props as Record<string, unknown>),
       className: cn(buttonVariants({ variant, size, className }), child.props.className),
     });
   }
