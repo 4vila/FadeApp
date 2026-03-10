@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import type { Prisma } from "@prisma/client";
 import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -7,6 +6,10 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 const validRoles: Role[] = ["admin", "barbearia", "profissional", "cliente"];
+
+function isValidRole(s: string | null): s is Role {
+  return s !== null && validRoles.includes(s as Role);
+}
 
 const createUsuarioSchema = z.object({
   name: z.string().min(1, "Nome obrigatório"),
@@ -27,13 +30,9 @@ export async function GET(request: Request) {
   }
   const { searchParams } = new URL(request.url);
   const roleParam = searchParams.get("role");
-  const where: Prisma.UserWhereInput =
-    roleParam && validRoles.includes(roleParam as Role)
-      ? { role: roleParam as Role }
-      : {};
-  const usuarios = await prisma.user.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
+
+  const baseOptions = {
+    orderBy: { createdAt: "desc" as const },
     select: {
       id: true,
       name: true,
@@ -43,7 +42,12 @@ export async function GET(request: Request) {
       createdAt: true,
       barbearia: { select: { id: true, name: true } },
     },
-  });
+  };
+
+  const usuarios = isValidRole(roleParam)
+    ? await prisma.user.findMany({ where: { role: roleParam }, ...baseOptions })
+    : await prisma.user.findMany({ where: {}, ...baseOptions });
+
   return NextResponse.json(usuarios);
 }
 
