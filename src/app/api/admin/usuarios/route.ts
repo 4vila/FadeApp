@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
   }
   const { searchParams } = new URL(request.url);
   const roleParam = searchParams.get("role");
-  const where =
+  const where: Prisma.UserWhereInput =
     roleParam && validRoles.includes(roleParam as Role)
       ? { role: roleParam as Role }
       : {};
