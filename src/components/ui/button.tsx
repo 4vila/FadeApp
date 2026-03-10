@@ -51,12 +51,12 @@ function Button({
   ...props
 }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants> & { asChild?: boolean }) {
   if (asChild && typeof (props as { children?: React.ReactNode }).children === "object") {
-    const child = (props as { children: React.ReactElement }).children;
-    const mergedProps = {
+    const child = (props as { children: React.ReactElement<Record<string, unknown>> }).children;
+    const mergedProps: Record<string, unknown> = {
       ...(child.props as object),
       className: cn(buttonVariants({ variant, size, className }), child.props.className),
     };
-    return React.cloneElement(child, mergedProps as React.HTMLAttributes<HTMLElement>);
+    return React.cloneElement(child, mergedProps);
   }
   return (
     <ButtonPrimitive
