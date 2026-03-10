@@ -56,7 +56,7 @@ function Button({
       ...(child.props as object),
       className: cn(buttonVariants({ variant, size, className }), child.props.className),
     };
-    return React.cloneElement(child, mergedProps);
+    return React.cloneElement(child, mergedProps as any);
   }
   return (
     <ButtonPrimitive
