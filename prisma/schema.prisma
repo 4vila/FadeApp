@@ -1,0 +1,187 @@
+// Schema Prisma - Plataforma Estetica
+// Modelos: User, Barbearia, Profissional, Servico, Agenda, Agendamento, Produto, Promocao, RegraCancelamento
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  cliente
+  profissional
+  barbearia
+  admin
+}
+
+enum StatusAgendamento {
+  confirmado
+  cancelado
+  realizado
+}
+
+enum TipoDesconto {
+  percentual
+  valor
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String?   // hash bcrypt; null se login OAuth
+  role          Role      @default(cliente)
+  barbeariaId   String?
+  phone         String?
+  image         String?
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  barbearia       Barbearia?    @relation(fields: [barbeariaId], references: [id], onDelete: SetNull)
+  agendamentos    Agendamento[] @relation("ClienteAgendamentos")
+  profissional    Profissional?
+}
+
+model Barbearia {
+  id                    String   @id @default(cuid())
+  name                  String
+  address               String?
+  city                  String?   // para filtro por localidade
+  phone                 String?
+  logo                  String?
+  photos                Json?    // string[] URLs
+  horarioFuncionamento   Json?   // { [dia: string]: { inicio, fim } }
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  users         User[]
+  profissionais Profissional[]
+  servicos      Servico[]
+  agendamentos  Agendamento[]
+  produtos      Produto[]
+  promocoes     Promocao[]
+  regraCancelamento RegraCancelamento?
+}
+
+model Profissional {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  barbeariaId     String
+  especialidades  String?  // ou Json array
+  photo           String?
+  diasTrabalho    Json?    // [0-6] ou ["seg", "ter"...]
+  horarioAtendimento Json? // { inicio, fim } opcional, senao herda da barbearia
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  barbearia   Barbearia   @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  servicos    ProfissionalServico[]
+  agendas     Agenda[]
+  agendamentos Agendamento[]
+}
+
+model Servico {
+  id           String   @id @default(cuid())
+  barbeariaId  String
+  name         String
+  description  String?
+  duracao      Int      // minutos
+  preco        Decimal  @db.Decimal(10, 2)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  barbearia    Barbearia   @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  profissionais ProfissionalServico[]
+  agendamentos Agendamento[]
+}
+
+model ProfissionalServico {
+  profissionalId String
+  servicoId      String
+
+  profissional Profissional @relation(fields: [profissionalId], references: [id], onDelete: Cascade)
+  servico      Servico     @relation(fields: [servicoId], references: [id], onDelete: Cascade)
+
+  @@id([profissionalId, servicoId])
+}
+
+model Agenda {
+  id              String    @id @default(cuid())
+  profissionalId  String
+  data           DateTime  @db.Date
+  horaInicio     String    // "09:00"
+  horaFim        String    // "10:00"
+  disponivel     Boolean   @default(true) // false = bloqueio/indisponivel
+  agendamentoId   String?   @unique
+  createdAt      DateTime  @default(now())
+
+  profissional Profissional @relation(fields: [profissionalId], references: [id], onDelete: Cascade)
+  agendamento  Agendamento? @relation(fields: [agendamentoId], references: [id], onDelete: SetNull)
+
+  @@index([profissionalId, data])
+}
+
+model Agendamento {
+  id             String             @id @default(cuid())
+  barbeariaId    String
+  clienteId      String
+  profissionalId String
+  servicoId     String
+  dataHora     DateTime
+  status       StatusAgendamento   @default(confirmado)
+  criadoEm     DateTime            @default(now())
+  observacao   String?
+
+  barbearia     Barbearia   @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+  cliente      User        @relation("ClienteAgendamentos", fields: [clienteId], references: [id], onDelete: Cascade)
+  profissional Profissional @relation(fields: [profissionalId], references: [id], onDelete: Cascade)
+  servico      Servico     @relation(fields: [servicoId], references: [id], onDelete: Cascade)
+  agendaSlot   Agenda?
+
+  @@index([barbeariaId])
+  @@index([clienteId])
+  @@index([profissionalId, dataHora])
+}
+
+model Produto {
+  id                String   @id @default(cuid())
+  barbeariaId       String
+  name              String
+  description       String?
+  preco             Decimal  @db.Decimal(10, 2)
+  quantidadeEstoque Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+}
+
+model Promocao {
+  id           String       @id @default(cuid())
+  barbeariaId  String
+  name         String
+  descricao    String?
+  tipoDesconto TipoDesconto
+  valor        Decimal     @db.Decimal(10, 2) // percentual 0-100 ou valor fixo
+  servicoIds   Json?       // string[]
+  dataInicio   DateTime    @db.Date
+  dataFim      DateTime    @db.Date
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+}
+
+model RegraCancelamento {
+  id                      String   @id @default(cuid())
+  barbeariaId             String   @unique
+  horasAntecedenciaMinima Int      // cancelar ate X horas antes
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  barbearia Barbearia @relation(fields: [barbeariaId], references: [id], onDelete: Cascade)
+}

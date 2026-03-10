@@ -1,0 +1,20 @@
+# PostgreSQL para desenvolvimento e testes da plataforma Estetica
+# Uso: docker-compose up -d
+# DATABASE_URL=postgresql://estetica:estetica@localhost:5432/estetica
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: estetica-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: estetica
+      POSTGRES_PASSWORD: estetica
+      POSTGRES_DB: estetica
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
