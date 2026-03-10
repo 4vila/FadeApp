@@ -54,9 +54,21 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  if (pathname.startsWith("/admin")) {
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET });
+    if (!token?.email) {
+      const url = new URL("/login", request.url);
+      url.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(url);
+    }
+    if (token.role !== "admin") {
+      return NextResponse.redirect(new URL("/login?error=Unauthorized", request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/cliente/:path*", "/profissional/:path*", "/barbearia/:path*"],
+  matcher: ["/cliente/:path*", "/profissional/:path*", "/barbearia/:path*", "/admin/:path*"],
 };

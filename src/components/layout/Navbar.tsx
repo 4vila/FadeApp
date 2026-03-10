@@ -36,7 +36,12 @@ export function Navbar() {
                   <Button variant="ghost" size="sm">Minha agenda</Button>
                 </Link>
               )}
-              {(session.user.role === "barbearia" || session.user.role === "admin") && (
+              {session.user.role === "admin" && (
+                <Link href="/admin">
+                  <Button variant="ghost" size="sm">Painel</Button>
+                </Link>
+              )}
+              {session.user.role === "barbearia" && (
                 <Link href="/barbearia/dashboard">
                   <Button variant="ghost" size="sm">Painel</Button>
                 </Link>
