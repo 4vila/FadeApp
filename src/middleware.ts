@@ -17,9 +17,11 @@ function pathMatchesRole(pathname: string, role: string): boolean {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const secret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+  const secureCookie = request.nextUrl.protocol === "https:";
 
   if (pathname.startsWith("/cliente")) {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET });
+    const token = await getToken({ req: request, secret, secureCookie });
     if (!token?.email) {
       const url = new URL("/login", request.url);
       url.searchParams.set("callbackUrl", pathname);
@@ -31,7 +33,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (pathname.startsWith("/profissional")) {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET });
+    const token = await getToken({ req: request, secret, secureCookie });
     if (!token?.email) {
       const url = new URL("/login", request.url);
       url.searchParams.set("callbackUrl", pathname);
@@ -43,7 +45,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (pathname.startsWith("/barbearia")) {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET });
+    const token = await getToken({ req: request, secret, secureCookie });
     if (!token?.email) {
       const url = new URL("/login", request.url);
       url.searchParams.set("callbackUrl", pathname);
@@ -55,7 +57,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (pathname.startsWith("/admin")) {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET });
+    const token = await getToken({ req: request, secret, secureCookie });
     if (!token?.email) {
       const url = new URL("/login", request.url);
       url.searchParams.set("callbackUrl", pathname);
