@@ -2,8 +2,8 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn, getSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,6 @@ import {
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 
 export function FormLogin() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
   const [error, setError] = useState<string | null>(null);
@@ -48,25 +47,8 @@ export function FormLogin() {
       );
       return;
     }
-    if (callbackUrl && callbackUrl !== "/") {
-      router.push(callbackUrl);
-      router.refresh();
-      return;
-    }
-    const session = await getSession();
-    const role = session?.user?.role;
-    const destination =
-      role === "admin"
-        ? "/admin"
-        : role === "barbearia"
-          ? "/barbearia/dashboard"
-          : role === "profissional"
-            ? "/profissional/dashboard"
-            : role === "cliente"
-              ? "/cliente/dashboard"
-              : "/";
-    router.push(destination);
-    router.refresh();
+    const destination = callbackUrl && callbackUrl !== "/" ? callbackUrl : "/";
+    window.location.href = destination;
   }
 
   return (
