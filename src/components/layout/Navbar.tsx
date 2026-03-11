@@ -27,33 +27,33 @@ export function Navbar() {
           ) : session ? (
             <>
               {session.user.role === "cliente" && (
-                <Link href="/cliente/dashboard">
-                  <Button variant="ghost" size="sm">Minha área</Button>
-                </Link>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/cliente/dashboard">Minha área</Link>
+                </Button>
               )}
               {session.user.role === "profissional" && (
-                <Link href="/profissional/dashboard">
-                  <Button variant="ghost" size="sm">Minha agenda</Button>
-                </Link>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/profissional/dashboard">Minha agenda</Link>
+                </Button>
               )}
               {session.user.role === "admin" && (
-                <Link href="/admin">
-                  <Button variant="ghost" size="sm">Painel</Button>
-                </Link>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/admin">Painel</Link>
+                </Button>
               )}
               {session.user.role === "barbearia" && (
-                <Link href="/barbearia/dashboard">
-                  <Button variant="ghost" size="sm">Painel</Button>
-                </Link>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/barbearia/dashboard">Painel</Link>
+                </Button>
               )}
               <Button variant="outline" size="sm" onClick={() => signOut()}>
                 Sair
               </Button>
             </>
           ) : (
-            <Link href="/login">
-              <Button variant="default" size="sm">Entrar</Button>
-            </Link>
+            <Button variant="default" size="sm" asChild>
+              <Link href="/login">Entrar</Link>
+            </Button>
           )}
         </div>
       </nav>

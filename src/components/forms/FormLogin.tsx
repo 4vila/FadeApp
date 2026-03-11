@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -48,11 +48,24 @@ export function FormLogin() {
       );
       return;
     }
-    if (result?.url) {
-      window.location.href = result.url;
+    if (callbackUrl && callbackUrl !== "/") {
+      router.push(callbackUrl);
+      router.refresh();
       return;
     }
-    router.push(callbackUrl);
+    const session = await getSession();
+    const role = session?.user?.role;
+    const destination =
+      role === "admin"
+        ? "/admin"
+        : role === "barbearia"
+          ? "/barbearia/dashboard"
+          : role === "profissional"
+            ? "/profissional/dashboard"
+            : role === "cliente"
+              ? "/cliente/dashboard"
+              : "/";
+    router.push(destination);
     router.refresh();
   }
 
