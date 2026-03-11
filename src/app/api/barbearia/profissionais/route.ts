@@ -10,6 +10,7 @@ const createProfissionalSchema = z.object({
   password: z.string().min(6),
   especialidades: z.string().optional(),
   phone: z.string().optional(),
+  photo: z.string().url().optional().nullable(),
 });
 
 export async function GET() {
@@ -56,6 +57,7 @@ export async function POST(request: Request) {
       userId: user.id,
       barbeariaId: access.barbeariaId,
       especialidades: parsed.data.especialidades ?? undefined,
+      photo: parsed.data.photo ?? undefined,
     },
     include: { user: { select: { id: true, name: true, email: true } } },
   });

@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, UserMinus } from "lucide-react";
+import { Plus, UserMinus, Pencil, Check, X } from "lucide-react";
 
 type Profissional = {
   id: string;
   especialidades: string | null;
+  photo: string | null;
   user: { id: string; name: string | null; email: string };
 };
 
@@ -24,6 +25,10 @@ export default function ProfissionaisPage() {
   const [password, setPassword] = useState("");
   const [especialidades, setEspecialidades] = useState("");
   const [phone, setPhone] = useState("");
+  const [photo, setPhoto] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editEspecialidades, setEditEspecialidades] = useState("");
+  const [editPhoto, setEditPhoto] = useState("");
 
   function loadList() {
     fetch("/api/barbearia/profissionais")
@@ -50,6 +55,7 @@ export default function ProfissionaisPage() {
           password,
           especialidades: especialidades.trim() || undefined,
           phone: phone.trim() || undefined,
+          photo: photo.trim() || undefined,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -62,8 +68,29 @@ export default function ProfissionaisPage() {
       setPassword("");
       setEspecialidades("");
       setPhone("");
+      setPhoto("");
       setShowForm(false);
       loadList();
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleSaveEdit(id: string) {
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/barbearia/profissionais/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          especialidades: editEspecialidades.trim() || null,
+          photo: editPhoto.trim() || null,
+        }),
+      });
+      if (res.ok) {
+        setEditingId(null);
+        loadList();
+      }
     } finally {
       setSubmitting(false);
     }
@@ -148,6 +175,16 @@ export default function ProfissionaisPage() {
                   placeholder="(00) 00000-0000"
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="photo">Foto (URL)</Label>
+                <Input
+                  id="photo"
+                  type="url"
+                  value={photo}
+                  onChange={(e) => setPhoto(e.target.value)}
+                  placeholder="https://exemplo.com/foto.jpg"
+                />
+              </div>
               <Button type="submit" disabled={submitting}>
                 {submitting ? "Adicionando..." : "Adicionar profissional"}
               </Button>
@@ -162,27 +199,77 @@ export default function ProfissionaisPage() {
         ) : (
           list.map((p) => (
             <Card key={p.id}>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <p className="font-medium">{p.user.name ?? "—"}</p>
-                  <p className="text-sm text-muted-foreground">{p.user.email}</p>
-                  {p.especialidades && (
-                    <p className="text-sm text-muted-foreground">{p.especialidades}</p>
+              <CardHeader className="flex flex-row items-start justify-between gap-4">
+                <div className="flex gap-4 items-center min-w-0">
+                  {p.photo ? (
+                    <img src={p.photo} alt="" className="h-16 w-16 rounded-full object-cover shrink-0 bg-muted" />
+                  ) : (
+                    <div className="h-16 w-16 rounded-full bg-muted shrink-0 flex items-center justify-center text-muted-foreground text-2xl font-medium">
+                      {(p.user.name ?? "?")[0]}
+                    </div>
                   )}
+                  <div className="min-w-0">
+                    <p className="font-medium">{p.user.name ?? "—"}</p>
+                    <p className="text-sm text-muted-foreground">{p.user.email}</p>
+                    {p.especialidades && (
+                      <p className="text-sm text-muted-foreground">{p.especialidades}</p>
+                    )}
+                  </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    if (!confirm("Remover este profissional?")) return;
-                    await fetch(`/api/barbearia/profissionais/${p.id}`, { method: "DELETE" });
-                    setList((prev) => prev.filter((x) => x.id !== p.id));
-                  }}
-                >
-                  <UserMinus className="h-4 w-4 mr-1" />
-                  Remover
-                </Button>
+                <div className="flex gap-2 shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditingId(p.id);
+                      setEditEspecialidades(p.especialidades ?? "");
+                      setEditPhoto(p.photo ?? "");
+                    }}
+                  >
+                    <Pencil className="h-4 w-4 mr-1" /> Editar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      if (!confirm("Remover este profissional?")) return;
+                      await fetch(`/api/barbearia/profissionais/${p.id}`, { method: "DELETE" });
+                      setList((prev) => prev.filter((x) => x.id !== p.id));
+                    }}
+                  >
+                    <UserMinus className="h-4 w-4 mr-1" /> Remover
+                  </Button>
+                </div>
               </CardHeader>
+              {editingId === p.id && (
+                <CardContent className="pt-0 border-t space-y-3">
+                  <div className="space-y-2">
+                    <Label>Especialidades</Label>
+                    <Input
+                      value={editEspecialidades}
+                      onChange={(e) => setEditEspecialidades(e.target.value)}
+                      placeholder="Ex: Corte, barba"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Foto (URL)</Label>
+                    <Input
+                      type="url"
+                      value={editPhoto}
+                      onChange={(e) => setEditPhoto(e.target.value)}
+                      placeholder="https://exemplo.com/foto.jpg"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={() => handleSaveEdit(p.id)} disabled={submitting}>
+                      <Check className="h-4 w-4 mr-1" /> Salvar
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
+                      <X className="h-4 w-4 mr-1" /> Cancelar
+                    </Button>
+                  </div>
+                </CardContent>
+              )}
             </Card>
           ))
         )}

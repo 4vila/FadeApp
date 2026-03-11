@@ -91,6 +91,7 @@ model Servico {
   description  String?
   duracao      Int      // minutos
   preco        Decimal  @db.Decimal(10, 2)
+  photo        String?  // URL da imagem
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
