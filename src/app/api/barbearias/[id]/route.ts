@@ -9,13 +9,25 @@ export async function GET(
     const { id } = await params;
     const barbearia = await prisma.barbearia.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        city: true,
+        phone: true,
+        logo: true,
+        photos: true,
+        horarioFuncionamento: true,
         profissionais: {
-          include: {
+          select: {
+            id: true,
+            especialidades: true,
             user: { select: { name: true, image: true } },
           },
         },
-        servicos: true,
+        servicos: {
+          select: { id: true, name: true, description: true, duracao: true, preco: true },
+        },
       },
     });
 

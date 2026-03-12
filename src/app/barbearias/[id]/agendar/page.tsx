@@ -23,9 +23,19 @@ export default async function AgendarPage({
   const { id: barbeariaId } = await params;
   const barbearia = await prisma.barbearia.findUnique({
     where: { id: barbeariaId },
-    include: {
-      servicos: true,
-      profissionais: { include: { user: { select: { name: true } } } },
+    select: {
+      id: true,
+      name: true,
+      servicos: {
+        select: { id: true, name: true, description: true, duracao: true, preco: true },
+      },
+      profissionais: {
+        select: {
+          id: true,
+          especialidades: true,
+          user: { select: { name: true } },
+        },
+      },
     },
   });
 
