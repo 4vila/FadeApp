@@ -89,7 +89,7 @@ export default function NovaBarbeariaPage() {
   }
 
   return (
-    <div>
+    <div className="max-w-2xl mx-auto space-y-6">
       <Link
         href="/admin/barbearias"
         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
@@ -105,7 +105,7 @@ export default function NovaBarbeariaPage() {
       </p>
 
       {step === "barbearia" && (
-        <Card className="mt-6 max-w-md">
+        <Card className="mt-6 max-w-md shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Store className="h-5 w-5" />
@@ -166,7 +166,7 @@ export default function NovaBarbeariaPage() {
       )}
 
       {step === "dono" && (
-        <Card className="mt-6 max-w-md">
+        <Card className="mt-6 max-w-md shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />

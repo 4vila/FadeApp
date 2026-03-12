@@ -127,7 +127,7 @@ export default function AgendamentosPage() {
   if (loading) return <p>Carregando...</p>;
 
   return (
-    <div>
+    <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Agendamentos</h1>
@@ -140,7 +140,7 @@ export default function AgendamentosPage() {
       </div>
 
       {showForm && (
-        <Card className="mt-6 max-w-md">
+        <Card className="mt-6 max-w-md shadow-lg">
           <CardContent className="pt-4">
             <p className="font-medium mb-3">Novo agendamento</p>
             <form onSubmit={handleCreate} className="space-y-4">

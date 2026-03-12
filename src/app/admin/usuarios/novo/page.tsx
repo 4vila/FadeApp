@@ -71,7 +71,7 @@ export default function NovoUsuarioPage() {
   const needsBarbearia = role === "barbearia" || role === "profissional";
 
   return (
-    <div>
+    <div className="max-w-2xl mx-auto space-y-6">
       <Link
         href="/admin/usuarios"
         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
@@ -84,7 +84,7 @@ export default function NovoUsuarioPage() {
         Crie um usuário manualmente (admin, dono de barbearia, profissional ou cliente).
       </p>
 
-      <Card className="mt-6 max-w-md">
+      <Card className="mt-6 max-w-md shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />

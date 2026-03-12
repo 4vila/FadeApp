@@ -100,7 +100,7 @@ export default function ProfissionaisPage() {
   if (loading) return <p>Carregando...</p>;
 
   return (
-    <div>
+    <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Profissionais</h1>
@@ -113,7 +113,7 @@ export default function ProfissionaisPage() {
       </div>
 
       {showForm && (
-        <Card className="mt-6 max-w-md">
+        <Card className="mt-6 max-w-md shadow-lg">
           <CardHeader>
             <p className="font-medium">Adicionar profissional</p>
             <p className="text-sm text-muted-foreground">Nome, e-mail e senha para acesso ao painel.</p>

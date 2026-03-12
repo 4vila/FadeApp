@@ -86,7 +86,10 @@ export default function ServicosPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error ?? "Erro ao criar serviço.");
+        const msg = data.error ?? "Erro ao criar serviço.";
+        const details = data.details as { fieldErrors?: Record<string, string[]> } | undefined;
+        const extra = details?.fieldErrors ? " " + Object.values(details.fieldErrors).flat().join(" ") : "";
+        setError(msg + extra);
         return;
       }
       setName("");
@@ -151,7 +154,7 @@ export default function ServicosPage() {
   if (loading) return <p>Carregando...</p>;
 
   return (
-    <div>
+    <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Serviços</h1>
@@ -164,7 +167,7 @@ export default function ServicosPage() {
       </div>
 
       {showForm && (
-        <Card className="mt-6 max-w-md">
+        <Card className="mt-6 max-w-md shadow-lg">
           <CardHeader>
             <p className="font-medium">Adicionar serviço</p>
             <p className="text-sm text-muted-foreground">Nome, duração e preço.</p>

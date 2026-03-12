@@ -36,27 +36,34 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const parsed = createServicoSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Dados inválidos", details: parsed.error.flatten() }, { status: 400 });
+    const first = parsed.error.errors[0];
+    const msg = first?.message ? `${first.path.join(".")}: ${first.message}` : "Dados inválidos.";
+    return NextResponse.json({ error: msg, details: parsed.error.flatten() }, { status: 400 });
   }
   const { profissionalIds, ...data } = parsed.data;
-  const servico = await prisma.servico.create({
-    data: {
-      ...data,
-      barbeariaId: access.barbeariaId,
-    },
-  });
-  if (profissionalIds?.length) {
-    await prisma.profissionalServico.createMany({
-      data: profissionalIds.map((profissionalId) => ({
-        profissionalId,
-        servicoId: servico.id,
-      })),
-      skipDuplicates: true,
+  try {
+    const servico = await prisma.servico.create({
+      data: {
+        ...data,
+        barbeariaId: access.barbeariaId,
+      },
     });
+    if (profissionalIds?.length) {
+      await prisma.profissionalServico.createMany({
+        data: profissionalIds.map((profissionalId) => ({
+          profissionalId,
+          servicoId: servico.id,
+        })),
+        skipDuplicates: true,
+      });
+    }
+    const withProfs = await prisma.servico.findUnique({
+      where: { id: servico.id },
+      include: { profissionais: true },
+    });
+    return NextResponse.json(withProfs ?? servico, { status: 201 });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Erro ao salvar serviço.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-  const withProfs = await prisma.servico.findUnique({
-    where: { id: servico.id },
-    include: { profissionais: true },
-  });
-  return NextResponse.json(withProfs ?? servico, { status: 201 });
 }

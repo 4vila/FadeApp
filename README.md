@@ -87,7 +87,9 @@ Se usar Supabase para o banco, configure também o Storage para upload de fotos:
 npm run storage:init
 ```
 
-Isso cria o bucket `fotos` com acesso público de leitura. Se o bucket já existir, o script não altera nada. (email: `hares@estetica.local`, senha: `RaelM040124@`).
+Isso cria o bucket `fotos` com acesso público de leitura. Se o bucket já existir, o script não altera nada.
+
+3. Em produção (ex.: Vercel), adicione as mesmas variáveis em Environment Variables e refaça o deploy.
 
 ### 6. Usuário administrador
 
