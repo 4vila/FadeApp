@@ -37,6 +37,15 @@ function planoVencido(planoVencidoEm: string | null) {
   return new Date(planoVencidoEm) < new Date();
 }
 
+function diasRestantes(planoVencidoEm: string | null): number | null {
+  if (!planoVencidoEm) return null;
+  const fim = new Date(planoVencidoEm);
+  const hoje = new Date();
+  if (fim < hoje) return null;
+  const diff = fim.getTime() - hoje.getTime();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
 export default function AdminBarbeariasPage() {
   const [list, setList] = useState<Barbearia[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,15 +82,19 @@ export default function AdminBarbeariasPage() {
 
   async function setAtivo(id: string, ativo: boolean) {
     setUpdatingId(id);
+    setError(null);
     try {
       const res = await fetch(`/api/admin/barbearias/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ativo }),
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
         await loadList();
         showSaved();
+      } else {
+        setError(typeof data?.error === "string" ? data.error : "Erro ao atualizar.");
       }
     } finally {
       setUpdatingId(null);
@@ -90,15 +103,19 @@ export default function AdminBarbeariasPage() {
 
   async function aplicarPlano(id: string, plano: string) {
     setUpdatingId(id);
+    setError(null);
     try {
       const res = await fetch(`/api/admin/barbearias/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plano }),
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
         await loadList();
         showSaved();
+      } else {
+        setError(typeof data?.error === "string" ? data.error : "Erro ao aplicar plano.");
       }
     } finally {
       setUpdatingId(null);
@@ -183,6 +200,7 @@ export default function AdminBarbeariasPage() {
         ) : !error ? (
           list.map((b) => {
             const vencido = planoVencido(b.planoVencidoEm);
+            const dias = diasRestantes(b.planoVencidoEm);
             const updating = updatingId === b.id;
             return (
               <Card key={b.id} className="shadow-sm border-border/80">
@@ -224,9 +242,11 @@ export default function AdminBarbeariasPage() {
                       {b.planoVencidoEm
                         ? vencido
                           ? "Plano vencido"
-                          : `Válido até ${formatarData(b.planoVencidoEm)}`
+                          : dias != null
+                            ? `Faltam ${dias} dia${dias !== 1 ? "s" : ""}`
+                            : `Válido até ${formatarData(b.planoVencidoEm)}`
                         : "Sem plano"}
-                      {b.planoTipo && ` (${b.planoTipo})`}
+                      {b.planoTipo && !b.planoVencidoEm ? ` (${b.planoTipo})` : b.planoTipo && vencido ? ` (${b.planoTipo})` : ""}
                     </span>
                   </div>
                 </CardHeader>

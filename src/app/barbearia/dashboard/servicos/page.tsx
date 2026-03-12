@@ -157,19 +157,19 @@ export default function ServicosPage() {
     <div className="max-w-3xl mx-auto space-y-6 px-2">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Serviços</h1>
-          <p className="text-muted-foreground">Serviços oferecidos pela barbearia.</p>
+          <h1 className="text-2xl font-bold tracking-tight">Serviços</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Serviços oferecidos pela barbearia.</p>
         </div>
-        <Button onClick={() => setShowForm((v) => !v)} className="flex items-center gap-2">
+        <Button onClick={() => setShowForm((v) => !v)} variant={showForm ? "outline" : "default"} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           {showForm ? "Cancelar" : "Novo serviço"}
         </Button>
       </div>
 
       {showForm && (
-        <Card className="mt-6 max-w-md mx-auto shadow-lg shadow-blue-500/10 ring-1 ring-blue-500/5">
-          <CardHeader>
-            <p className="font-medium">Adicionar serviço</p>
+        <Card className="mt-6 max-w-md mx-auto shadow-md border-border/80 bg-card">
+          <CardHeader className="space-y-1 pb-2">
+            <p className="font-semibold">Adicionar serviço</p>
             <p className="text-sm text-muted-foreground">Nome, duração e preço.</p>
           </CardHeader>
           <CardContent>

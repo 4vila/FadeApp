@@ -52,6 +52,13 @@ export async function PATCH(
     });
     return NextResponse.json(updated);
   } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (msg.includes("column") && (msg.includes("does not exist") || msg.includes("não existe"))) {
+      return NextResponse.json(
+        { error: "Banco desatualizado. Execute no servidor: npx prisma migrate deploy" },
+        { status: 503 }
+      );
+    }
     return NextResponse.json({ error: "Barbearia não encontrada ou erro ao atualizar." }, { status: 404 });
   }
 }

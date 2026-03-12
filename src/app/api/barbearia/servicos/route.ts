@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireBarbeariaAccess } from "@/lib/auth-barbearia";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 
 const createServicoSchema = z.object({
   name: z.string().min(1),
@@ -41,11 +42,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: msg, details: parsed.error.flatten() }, { status: 400 });
   }
   const { profissionalIds, ...data } = parsed.data;
+  const { name, description, duracao, preco } = data;
+  const barbeariaId = access.barbeariaId;
+
   try {
     const servico = await prisma.servico.create({
       data: {
-        ...data,
-        barbeariaId: access.barbeariaId,
+        name,
+        description,
+        duracao,
+        preco,
+        photo: data.photo ?? undefined,
+        barbeariaId,
       },
     });
     if (profissionalIds?.length) {
@@ -63,7 +71,45 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(withProfs ?? servico, { status: 201 });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Erro ao salvar serviço.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const msg = e instanceof Error ? e.message : String(e);
+    if (msg.includes("column") && (msg.includes("does not exist") || msg.includes("não existe"))) {
+      try {
+        const id = randomUUID();
+        await prisma.$executeRawUnsafe(
+          `INSERT INTO "Servico" (id, "barbeariaId", name, description, duracao, preco, "createdAt", "updatedAt")
+           VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
+          id,
+          barbeariaId,
+          name,
+          description ?? null,
+          duracao,
+          Number(preco)
+        );
+        if (profissionalIds?.length) {
+          for (const profissionalId of profissionalIds) {
+            await prisma.$executeRawUnsafe(
+              `INSERT INTO "ProfissionalServico" ("profissionalId", "servicoId") VALUES ($1, $2) ON CONFLICT ("profissionalId", "servicoId") DO NOTHING`,
+              profissionalId,
+              id
+            );
+          }
+        }
+        const [row] = await prisma.$queryRawUnsafe<
+          { id: string; name: string; description: string | null; duracao: number; preco: unknown; barbeariaId: string; createdAt: Date; updatedAt: Date }[]
+        >(
+          `SELECT id, name, description, duracao, preco, "barbeariaId", "createdAt", "updatedAt" FROM "Servico" WHERE id = $1`,
+          id
+        );
+        if (row) return NextResponse.json({ ...row, photo: null, profissionais: [] }, { status: 201 });
+      } catch (fallbackErr) {
+        console.error(fallbackErr);
+        return NextResponse.json(
+          { error: "Banco desatualizado. Execute no servidor: npx prisma migrate deploy" },
+          { status: 503 }
+        );
+      }
+    }
+    console.error(e);
+    return NextResponse.json({ error: msg || "Erro ao salvar serviço." }, { status: 500 });
   }
 }
