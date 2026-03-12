@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { BarbeariaNav } from "@/components/barbearia/BarbeariaNav";
+import { BarbeariaDashboardShell } from "@/components/barbearia/BarbeariaDashboardShell";
 
 export default async function BarbeariaDashboardLayout({
   children,
@@ -13,13 +13,5 @@ export default async function BarbeariaDashboardLayout({
     redirect("/login?error=Unauthorized");
   }
 
-  return (
-    <div className="flex min-h-screen">
-      <aside className="w-56 border-r bg-muted/30 p-4">
-        <p className="font-semibold">Painel Barbearia</p>
-        <BarbeariaNav />
-      </aside>
-      <main className="flex-1 overflow-auto p-6">{children}</main>
-    </div>
-  );
+  return <BarbeariaDashboardShell>{children}</BarbeariaDashboardShell>;
 }

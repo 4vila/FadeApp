@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, UserMinus, Pencil, Check, X } from "lucide-react";
+import { PhotoUpload } from "@/components/ui/photo-upload";
 
 type Profissional = {
   id: string;
@@ -175,16 +176,7 @@ export default function ProfissionaisPage() {
                   placeholder="(00) 00000-0000"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="photo">Foto (URL)</Label>
-                <Input
-                  id="photo"
-                  type="url"
-                  value={photo}
-                  onChange={(e) => setPhoto(e.target.value)}
-                  placeholder="https://exemplo.com/foto.jpg"
-                />
-              </div>
+              <PhotoUpload value={photo || null} onChange={(url) => setPhoto(url ?? "")} label="Foto" rounded="full" />
               <Button type="submit" disabled={submitting}>
                 {submitting ? "Adicionando..." : "Adicionar profissional"}
               </Button>
@@ -251,15 +243,7 @@ export default function ProfissionaisPage() {
                       placeholder="Ex: Corte, barba"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Foto (URL)</Label>
-                    <Input
-                      type="url"
-                      value={editPhoto}
-                      onChange={(e) => setEditPhoto(e.target.value)}
-                      placeholder="https://exemplo.com/foto.jpg"
-                    />
-                  </div>
+                  <PhotoUpload value={editPhoto || null} onChange={(url) => setEditPhoto(url ?? "")} label="Foto" rounded="full" />
                   <div className="flex gap-2">
                     <Button size="sm" onClick={() => handleSaveEdit(p.id)} disabled={submitting}>
                       <Check className="h-4 w-4 mr-1" /> Salvar

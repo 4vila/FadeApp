@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
+import { PhotoUpload } from "@/components/ui/photo-upload";
 
 type Servico = {
   id: string;
@@ -220,16 +221,7 @@ export default function ServicosPage() {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="photo">Foto (URL)</Label>
-                <Input
-                  id="photo"
-                  type="url"
-                  value={photo}
-                  onChange={(e) => setPhoto(e.target.value)}
-                  placeholder="https://exemplo.com/servico.jpg"
-                />
-              </div>
+              <PhotoUpload value={photo || null} onChange={(url) => setPhoto(url ?? "")} label="Foto" rounded="lg" />
               {profissionais.length > 0 && (
                 <div className="space-y-2">
                   <Label>Profissionais que realizam</Label>
@@ -336,10 +328,7 @@ export default function ServicosPage() {
                       <Input value={editPreco} onChange={(e) => setEditPreco(e.target.value)} inputMode="decimal" />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Foto (URL)</Label>
-                    <Input type="url" value={editPhoto} onChange={(e) => setEditPhoto(e.target.value)} placeholder="https://..." />
-                  </div>
+                  <PhotoUpload value={editPhoto || null} onChange={(url) => setEditPhoto(url ?? "")} label="Foto" rounded="lg" />
                   {profissionais.length > 0 && (
                     <div className="space-y-2">
                       <Label>Profissionais que realizam</Label>
