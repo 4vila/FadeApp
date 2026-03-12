@@ -28,17 +28,18 @@ enum TipoDesconto {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  password      String?   // hash bcrypt; null se login OAuth
-  role          Role      @default(cliente)
-  barbeariaId   String?
-  phone         String?
-  image         String?
-  emailVerified DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                 String    @id @default(cuid())
+  name               String?
+  email              String    @unique
+  password           String?   // hash bcrypt; null se login OAuth
+  role               Role      @default(cliente)
+  barbeariaId        String?   // dono: sua barbearia; cliente: barbearia que o cadastrou (opcional)
+  phone              String?
+  image              String?
+  emailVerified      DateTime?
+  mustChangePassword Boolean   @default(false) // true quando barbearia cria cliente com senha temporária
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   barbearia       Barbearia?    @relation(fields: [barbeariaId], references: [id], onDelete: SetNull)
   agendamentos    Agendamento[] @relation("ClienteAgendamentos")

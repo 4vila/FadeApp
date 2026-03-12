@@ -19,7 +19,7 @@ export async function GET() {
   }
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, name: true, email: true, phone: true, image: true, role: true },
+    select: { id: true, name: true, email: true, phone: true, image: true, role: true, mustChangePassword: true },
   });
   if (!user) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
   return NextResponse.json(user);
@@ -37,7 +37,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 
-  const data: { name?: string; phone?: string | null; image?: string | null; password?: string } = {};
+  const data: { name?: string; phone?: string | null; image?: string | null; password?: string; mustChangePassword?: boolean } = {};
   if (parsed.data.name !== undefined) data.name = parsed.data.name;
   if (parsed.data.phone !== undefined) data.phone = parsed.data.phone === "" ? null : parsed.data.phone ?? null;
   if (parsed.data.image !== undefined) data.image = parsed.data.image === "" ? null : parsed.data.image ?? null;
@@ -55,6 +55,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Senha atual incorreta." }, { status: 400 });
     }
     data.password = await bcrypt.hash(parsed.data.novaSenha, 10);
+    data.mustChangePassword = false;
   }
 
   const updated = await prisma.user.update({
@@ -66,6 +67,7 @@ export async function PATCH(request: Request) {
     name: updated.name,
     phone: updated.phone,
     image: updated.image,
+    mustChangePassword: updated.mustChangePassword,
   });
 }
 

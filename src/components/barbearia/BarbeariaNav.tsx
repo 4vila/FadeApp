@@ -30,6 +30,9 @@ export function BarbeariaNav() {
         <Link href={`${base}/agendamentos`} className={linkClass(`${base}/agendamentos`)}>
           Agendamentos
         </Link>
+        <Link href={`${base}/clientes`} className={linkClass(`${base}/clientes`)}>
+          Clientes
+        </Link>
         <Link href={`${base}/relatorios`} className={linkClass(`${base}/relatorios`)}>
           Relatórios
         </Link>

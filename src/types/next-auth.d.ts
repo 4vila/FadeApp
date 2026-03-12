@@ -7,6 +7,7 @@ declare module "next-auth" {
     name?: string | null;
     role: string;
     barbeariaId?: string | null;
+    mustChangePassword?: boolean;
   }
 
   interface Session {
@@ -17,6 +18,7 @@ declare module "next-auth" {
       image?: string | null;
       role: string;
       barbeariaId?: string | null;
+      mustChangePassword?: boolean;
     };
   }
 }
@@ -26,5 +28,6 @@ declare module "next-auth/jwt" {
     id: string;
     role: string;
     barbeariaId?: string | null;
+    mustChangePassword?: boolean;
   }
 }

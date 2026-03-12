@@ -10,6 +10,9 @@ export default async function ClienteDashboardLayout({
   const session = await auth();
   if (!session?.user) redirect("/login?callbackUrl=/cliente/dashboard");
   if (session.user.role !== "cliente") redirect("/login?error=Unauthorized");
+  if (session.user.mustChangePassword) {
+    redirect("/cliente/trocar-senha-obrigatoria");
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

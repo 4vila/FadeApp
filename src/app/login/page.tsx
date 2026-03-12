@@ -3,11 +3,12 @@ import { Scissors } from "lucide-react";
 import { FormLogin } from "@/components/forms/FormLogin";
 import { Button } from "@/components/ui/button";
 
-type LoginPageProps = { searchParams: Promise<{ error?: string }> };
+type LoginPageProps = { searchParams: Promise<{ error?: string; msg?: string }> };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const authError = params?.error;
+  const successMsg = params?.msg;
 
   const configErrorMsg =
     authError === "Configuration"
@@ -44,6 +45,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             role="alert"
           >
             {configErrorMsg}
+          </div>
+        )}
+        {successMsg && (
+          <div
+            className="w-full rounded-xl border border-green-500/50 bg-green-500/10 px-4 py-3 text-center text-caption text-green-700 dark:text-green-400"
+            role="status"
+          >
+            {successMsg}
           </div>
         )}
         <FormLogin />

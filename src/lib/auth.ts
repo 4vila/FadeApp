@@ -29,6 +29,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           name: user.name,
           role: String(user.role),
           barbeariaId: user.barbeariaId ?? undefined,
+          mustChangePassword: user.mustChangePassword ?? false,
         };
       },
     }),
@@ -41,6 +42,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
         token.role = user.role;
         token.barbeariaId = user.barbeariaId;
+        token.mustChangePassword = user.mustChangePassword;
       }
       return token;
     },
@@ -49,6 +51,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = (token.sub ?? token.id) as string;
         session.user.role = (token.role as string) ?? "cliente";
         session.user.barbeariaId = (token.barbeariaId as string | null) ?? null;
+        session.user.mustChangePassword = token.mustChangePassword === true;
       }
       return session;
     },
