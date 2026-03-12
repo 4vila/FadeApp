@@ -1,12 +1,120 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 
 type Servico = { id: string; name: string; duracao: number; preco: unknown };
 type Profissional = { id: string; user: { name: string | null }; especialidades: string | null };
+
+const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+function SeletorData({
+  value,
+  onChange,
+  minDate,
+}: {
+  value: string;
+  onChange: (yyyyMmDd: string) => void;
+  minDate: Date;
+}) {
+  const [mesAtual, setMesAtual] = useState(() => {
+    if (value) {
+      const [y, m] = value.split("-").map(Number);
+      return new Date(y, (m ?? 1) - 1, 1);
+    }
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  });
+
+  const dias = useMemo(() => {
+    const ano = mesAtual.getFullYear();
+    const mes = mesAtual.getMonth();
+    const primeiro = new Date(ano, mes, 1);
+    const ultimo = new Date(ano, mes + 1, 0);
+    const inicioVazio = primeiro.getDay();
+    const list: (Date | null)[] = [];
+    for (let i = 0; i < inicioVazio; i++) list.push(null);
+    for (let d = 1; d <= ultimo.getDate(); d++) list.push(new Date(ano, mes, d));
+    return list;
+  }, [mesAtual]);
+
+  const hoje = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  }, []);
+
+  const minTime = minDate.getTime();
+
+  function toYyyyMmDd(d: Date) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  const anterior = () => setMesAtual((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1));
+  const proximo = () => setMesAtual((m) => new Date(m.getFullYear(), m.getMonth() + 1, 1));
+
+  return (
+    <div className="rounded-xl border border-border/80 bg-background p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={anterior} aria-label="Mês anterior">
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="text-sm font-medium">
+          {MESES[mesAtual.getMonth()]} {mesAtual.getFullYear()}
+        </span>
+        <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={proximo} aria-label="Próximo mês">
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center">
+        {DIAS.map((d) => (
+          <div key={d} className="text-xs font-medium text-muted-foreground py-1">
+            {d}
+          </div>
+        ))}
+        {dias.map((d, i) => {
+          if (!d) return <div key={`e-${i}`} />;
+          const t = d.getTime();
+          const disabled = t < minTime;
+          const isToday = t === hoje;
+          const isSelected = value === toYyyyMmDd(d);
+          return (
+            <button
+              key={d.toISOString()}
+              type="button"
+              disabled={disabled}
+              onClick={() => !disabled && onChange(toYyyyMmDd(d))}
+              className={`h-9 w-full rounded-md text-sm transition-colors
+                ${disabled ? "cursor-not-allowed text-muted-foreground/50" : "hover:bg-muted"}
+                ${isToday ? "ring-1 ring-primary" : ""}
+                ${isSelected ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}`}
+            >
+              {d.getDate()}
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-3 flex items-center gap-2 text-caption text-muted-foreground">
+        <CalendarIcon className="h-4 w-4" />
+        <input
+          type="date"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          min={toYyyyMmDd(minDate)}
+          className="flex-1 rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+          aria-label="Data (também pode digitar)"
+        />
+      </div>
+    </div>
+  );
+}
 
 export function FluxoAgendamento({
   barbeariaId,
@@ -155,14 +263,17 @@ export function FluxoAgendamento({
         <Card className="overflow-hidden rounded-2xl border border-border/80 shadow-[var(--shadow-card)]">
           <CardHeader>
             <h2 className="text-heading-3">3. Escolha a data</h2>
+            <p className="text-caption text-muted-foreground">Clique no dia no calendário ou use o campo abaixo para digitar.</p>
           </CardHeader>
           <CardContent className="space-y-4">
-            <input
-              type="date"
+            <SeletorData
               value={data}
-              onChange={(e) => setData(e.target.value)}
-              min={new Date().toISOString().slice(0, 10)}
-              className="h-11 w-full rounded-xl border border-border/80 bg-background px-3 py-2"
+              onChange={setData}
+              minDate={(() => {
+                const d = new Date();
+                d.setHours(0, 0, 0, 0);
+                return d;
+              })()}
             />
             <div className="flex gap-2">
               <Button onClick={() => setStep(2)} variant="outline" className="rounded-xl">Voltar</Button>

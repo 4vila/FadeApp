@@ -49,6 +49,7 @@ export async function POST(request: Request) {
           id: parsed.data.servicoId,
           barbeariaId: parsed.data.barbeariaId,
         },
+        select: { id: true, duracao: true },
       }),
       prisma.profissional.findFirst({
         where: {
