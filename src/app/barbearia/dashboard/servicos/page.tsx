@@ -154,7 +154,7 @@ export default function ServicosPage() {
   if (loading) return <p>Carregando...</p>;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 px-2">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Serviços</h1>
@@ -167,7 +167,7 @@ export default function ServicosPage() {
       </div>
 
       {showForm && (
-        <Card className="mt-6 max-w-md shadow-lg">
+        <Card className="mt-6 max-w-md mx-auto shadow-lg shadow-blue-500/10 ring-1 ring-blue-500/5">
           <CardHeader>
             <p className="font-medium">Adicionar serviço</p>
             <p className="text-sm text-muted-foreground">Nome, duração e preço.</p>

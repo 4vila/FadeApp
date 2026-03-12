@@ -26,6 +26,7 @@ export function PhotoUpload({
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = React.useState(false);
   const [uploadError, setUploadError] = React.useState<string | null>(null);
+  const [uploadUnavailable, setUploadUnavailable] = React.useState(false);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -44,7 +45,13 @@ export function PhotoUpload({
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         onChange(null);
-        setUploadError(data.error ?? "Falha ao enviar imagem.");
+        const msg = data.error ?? "";
+        if (res.status === 503 || msg.includes("não configurado") || msg.includes("Upload não configurado")) {
+          setUploadUnavailable(true);
+          setUploadError(null);
+        } else {
+          setUploadError(msg || "Falha ao enviar imagem.");
+        }
         return;
       }
       if (data.url) onChange(data.url);
@@ -68,16 +75,23 @@ export function PhotoUpload({
           onChange={handleFileChange}
           disabled={uploading}
         />
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => inputRef.current?.click()}
-          disabled={uploading}
-        >
-          <Upload className="h-4 w-4 mr-2" />
-          {uploading ? "Enviando..." : "Anexar imagem"}
-        </Button>
+        {!uploadUnavailable && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => inputRef.current?.click()}
+            disabled={uploading}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            {uploading ? "Enviando..." : "Anexar imagem"}
+          </Button>
+        )}
+        {uploadUnavailable && (
+          <p className="text-sm text-muted-foreground">
+            Foto opcional. Upload indisponível no momento.
+          </p>
+        )}
         {value && (
           <>
             <div

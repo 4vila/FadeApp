@@ -7,12 +7,20 @@ export async function GET(request: NextRequest) {
     const nome = searchParams.get("nome")?.trim();
     const cidade = searchParams.get("cidade")?.trim();
 
-    const where: { name?: { contains: string; mode: "insensitive" }; city?: { contains: string; mode: "insensitive" } } = {};
+    const where: {
+      name?: { contains: string; mode: "insensitive" };
+      city?: { contains: string; mode: "insensitive" };
+      ativo?: boolean;
+      OR?: { planoVencidoEm: null | { gt: Date } }[];
+    } = {
+      ativo: true,
+      OR: [{ planoVencidoEm: null }, { planoVencidoEm: { gt: new Date() } }],
+    };
     if (nome) where.name = { contains: nome, mode: "insensitive" };
     if (cidade) where.city = { contains: cidade, mode: "insensitive" };
 
     const barbearias = await prisma.barbearia.findMany({
-      where: Object.keys(where).length ? where : undefined,
+      where,
       select: {
         id: true,
         name: true,

@@ -46,16 +46,19 @@ model User {
 }
 
 model Barbearia {
-  id                    String   @id @default(cuid())
+  id                    String    @id @default(cuid())
   name                  String
   address               String?
   city                  String?   // para filtro por localidade
   phone                 String?
   logo                  String?
-  photos                Json?    // string[] URLs
-  horarioFuncionamento   Json?   // { [dia: string]: { inicio, fim } }
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  photos                Json?     // string[] URLs
+  horarioFuncionamento   Json?    // { [dia: string]: { inicio, fim } }
+  ativo                 Boolean   @default(true)
+  planoVencidoEm        DateTime? // null = sem restrição; passado = inacessível
+  planoTipo             String?   // "30" | "60" | "90" | "anual" (dias ou anual)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   users         User[]
   profissionais Profissional[]
