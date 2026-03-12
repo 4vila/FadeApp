@@ -10,75 +10,116 @@ const createSchema = z.object({
   dataHora: z.string(), // ISO datetime
 });
 
+function jsonError(message: string, status: number) {
+  return NextResponse.json({ error: message }, { status });
+}
+
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Faça login para agendar." }, { status: 401 });
-  }
-  if (session.user.role !== "cliente") {
-    return NextResponse.json({ error: "Apenas clientes podem agendar." }, { status: 403 });
-  }
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return jsonError("Faça login para agendar.", 401);
+    }
+    if (session.user.role !== "cliente") {
+      return jsonError("Apenas clientes podem agendar.", 403);
+    }
 
-  const body = await request.json().catch(() => ({}));
-  const parsed = createSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Dados inválidos", details: parsed.error.flatten() }, { status: 400 });
-  }
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return jsonError("Corpo da requisição inválido.", 400);
+    }
+    const parsed = createSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Dados inválidos", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
 
-  const dataHora = new Date(parsed.data.dataHora);
-  if (isNaN(dataHora.getTime()) || dataHora < new Date()) {
-    return NextResponse.json({ error: "Data/hora inválida ou no passado." }, { status: 400 });
-  }
+    const dataHora = new Date(parsed.data.dataHora);
+    if (Number.isNaN(dataHora.getTime()) || dataHora < new Date()) {
+      return jsonError("Data/hora inválida ou no passado.", 400);
+    }
 
-  const servico = await prisma.servico.findFirst({
-    where: {
-      id: parsed.data.servicoId,
-      barbeariaId: parsed.data.barbeariaId,
-    },
-  });
+    const [servico, profissional] = await Promise.all([
+      prisma.servico.findFirst({
+        where: {
+          id: parsed.data.servicoId,
+          barbeariaId: parsed.data.barbeariaId,
+        },
+      }),
+      prisma.profissional.findFirst({
+        where: {
+          id: parsed.data.profissionalId,
+          barbeariaId: parsed.data.barbeariaId,
+        },
+      }),
+    ]);
 
-  if (!servico) {
-    return NextResponse.json({ error: "Serviço não encontrado." }, { status: 404 });
-  }
+    if (!servico) {
+      return jsonError("Serviço não encontrado.", 404);
+    }
+    if (!profissional) {
+      return jsonError("Profissional não encontrado nesta barbearia.", 400);
+    }
 
-  const fim = new Date(dataHora);
-  fim.setMinutes(fim.getMinutes() + servico.duracao);
-  const todosNoDia = await prisma.agendamento.findMany({
-    where: {
-      profissionalId: parsed.data.profissionalId,
-      status: "confirmado",
-      dataHora: {
-        gte: new Date(dataHora.getFullYear(), dataHora.getMonth(), dataHora.getDate(), 0, 0, 0),
-        lt: new Date(dataHora.getFullYear(), dataHora.getMonth(), dataHora.getDate() + 1, 0, 0, 0),
+    const fim = new Date(dataHora);
+    fim.setMinutes(fim.getMinutes() + servico.duracao);
+    const todosNoDia = await prisma.agendamento.findMany({
+      where: {
+        profissionalId: parsed.data.profissionalId,
+        status: "confirmado",
+        dataHora: {
+          gte: new Date(dataHora.getFullYear(), dataHora.getMonth(), dataHora.getDate(), 0, 0, 0),
+          lt: new Date(dataHora.getFullYear(), dataHora.getMonth(), dataHora.getDate() + 1, 0, 0, 0),
+        },
       },
-    },
-    include: { servico: { select: { duracao: true } } },
-  });
-  const conflito = todosNoDia.some((a) => {
-    const aFim = new Date(a.dataHora);
-    aFim.setMinutes(aFim.getMinutes() + a.servico.duracao);
-    return dataHora < aFim && fim > a.dataHora;
-  });
-  if (conflito) {
-    return NextResponse.json({ error: "Horário não disponível." }, { status: 409 });
+      include: { servico: { select: { duracao: true } } },
+    });
+    const conflito = todosNoDia.some((a) => {
+      const aFim = new Date(a.dataHora);
+      aFim.setMinutes(aFim.getMinutes() + a.servico.duracao);
+      return dataHora < aFim && fim > a.dataHora;
+    });
+    if (conflito) {
+      return jsonError("Horário não disponível.", 409);
+    }
+
+    const agendamento = await prisma.agendamento.create({
+      data: {
+        barbeariaId: parsed.data.barbeariaId,
+        clienteId: session.user.id,
+        profissionalId: parsed.data.profissionalId,
+        servicoId: parsed.data.servicoId,
+        dataHora,
+        status: "confirmado",
+      },
+      include: {
+        servico: { select: { name: true } },
+        profissional: { include: { user: { select: { name: true } } } },
+      },
+    });
+
+    const payload = {
+      id: agendamento.id,
+      barbeariaId: agendamento.barbeariaId,
+      clienteId: agendamento.clienteId,
+      profissionalId: agendamento.profissionalId,
+      servicoId: agendamento.servicoId,
+      dataHora: agendamento.dataHora.toISOString(),
+      status: agendamento.status,
+      criadoEm: agendamento.criadoEm.toISOString(),
+      servico: agendamento.servico,
+      profissional: agendamento.profissional,
+    };
+    return NextResponse.json(payload, { status: 201 });
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Erro ao confirmar agendamento.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  const agendamento = await prisma.agendamento.create({
-    data: {
-      barbeariaId: parsed.data.barbeariaId,
-      clienteId: session.user.id,
-      profissionalId: parsed.data.profissionalId,
-      servicoId: parsed.data.servicoId,
-      dataHora,
-      status: "confirmado",
-    },
-    include: {
-      servico: { select: { name: true } },
-      profissional: { include: { user: { select: { name: true } } } },
-    },
-  });
-
-  return NextResponse.json(agendamento, { status: 201 });
 }
 
 export async function GET(request: Request) {

@@ -28,6 +28,8 @@ export function PhotoUpload({
   const [uploadError, setUploadError] = React.useState<string | null>(null);
   const [uploadUnavailable, setUploadUnavailable] = React.useState(false);
 
+  const MAX_DATA_URL_SIZE = 500 * 1024; // 500KB para fallback base64
+
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -37,24 +39,37 @@ export function PhotoUpload({
       return;
     }
     setUploadError(null);
+    setUploadUnavailable(false);
     setUploading(true);
     try {
       const form = new FormData();
       form.append("file", file);
       const res = await fetch("/api/upload", { method: "POST", body: form });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        onChange(null);
-        const msg = data.error ?? "";
-        if (res.status === 503 || msg.includes("não configurado") || msg.includes("Upload não configurado")) {
-          setUploadUnavailable(true);
-          setUploadError(null);
-        } else {
-          setUploadError(msg || "Falha ao enviar imagem.");
-        }
+      if (res.ok && data.url) {
+        onChange(data.url);
         return;
       }
-      if (data.url) onChange(data.url);
+      const msg = data.error ?? "";
+      if (res.status === 503 || msg.includes("não configurado") || msg.includes("Upload não configurado")) {
+        if (file.size <= MAX_DATA_URL_SIZE) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const dataUrl = reader.result as string;
+            if (dataUrl) onChange(dataUrl);
+            setUploading(false);
+          };
+          reader.onerror = () => {
+            setUploadError("Não foi possível ler a imagem.");
+            setUploading(false);
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+        setUploadError("Upload não configurado (Supabase). Use imagens menores que 500KB para salvar em base64.");
+      } else {
+        setUploadError(msg || "Falha ao enviar imagem.");
+      }
     } finally {
       setUploading(false);
     }

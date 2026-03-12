@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Users, Plus, Pencil, Trash2 } from "lucide-react";
 
 type Usuario = {
   id: string;
@@ -21,6 +23,14 @@ export default function AdminUsuariosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [roleFilter, setRoleFilter] = useState<string>("");
+  const [editing, setEditing] = useState<Usuario | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+  const [editRole, setEditRole] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   function loadList() {
     setError(null);
@@ -46,6 +56,59 @@ export default function AdminUsuariosPage() {
   useEffect(() => {
     loadList().finally(() => setLoading(false));
   }, [roleFilter]);
+
+  function openEdit(u: Usuario) {
+    setEditing(u);
+    setEditName(u.name ?? "");
+    setEditEmail(u.email);
+    setEditPassword("");
+    setEditRole(u.role);
+    setEditError(null);
+  }
+
+  async function handleSaveEdit() {
+    if (!editing) return;
+    setSaving(true);
+    setEditError(null);
+    try {
+      const body: Record<string, unknown> = {
+        name: editName.trim(),
+        email: editEmail.trim().toLowerCase(),
+        role: editRole,
+      };
+      if (editPassword.trim().length >= 6) body.password = editPassword.trim();
+      const res = await fetch(`/api/admin/usuarios/${editing.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setEditError(data.error ?? "Erro ao salvar.");
+        return;
+      }
+      setEditing(null);
+      loadList();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete(u: Usuario) {
+    if (!confirm(`Excluir o usuário "${u.name ?? u.email}"? Esta ação não pode ser desfeita.`)) return;
+    setDeletingId(u.id);
+    try {
+      const res = await fetch(`/api/admin/usuarios/${u.id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.error ?? "Erro ao excluir.");
+        return;
+      }
+      loadList();
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   const roleLabels: Record<string, string> = {
     admin: "Administrador",
@@ -153,6 +216,25 @@ export default function AdminUsuariosPage() {
                         {u.barbearia.name}
                       </span>
                     )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => openEdit(u)}
+                      aria-label="Editar"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => handleDelete(u)}
+                      disabled={deletingId === u.id}
+                      aria-label="Excluir"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -160,6 +242,73 @@ export default function AdminUsuariosPage() {
           ))
         ) : null}
       </div>
+
+      {editing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => !saving && setEditing(null)}>
+          <Card className="w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <CardContent className="pt-6">
+              <h2 className="text-lg font-semibold mb-4">Editar usuário</h2>
+              {editError && (
+                <p className="text-sm text-destructive mb-3 rounded-md bg-destructive/10 px-2 py-1.5">{editError}</p>
+              )}
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="edit-name">Nome</Label>
+                  <Input
+                    id="edit-name"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-email">Email</Label>
+                  <Input
+                    id="edit-email"
+                    type="email"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-password">Nova senha (deixe em branco para não alterar)</Label>
+                  <Input
+                    id="edit-password"
+                    type="password"
+                    value={editPassword}
+                    onChange={(e) => setEditPassword(e.target.value)}
+                    placeholder="Mínimo 6 caracteres"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-role">Perfil</Label>
+                  <select
+                    id="edit-role"
+                    value={editRole}
+                    onChange={(e) => setEditRole(e.target.value)}
+                    className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="admin">Administrador</option>
+                    <option value="barbearia">Barbearia</option>
+                    <option value="profissional">Profissional</option>
+                    <option value="cliente">Cliente</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mt-6 flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setEditing(null)} disabled={saving}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSaveEdit} disabled={saving}>
+                  {saving ? "Salvando..." : "Salvar"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

@@ -9,7 +9,7 @@ const createServicoSchema = z.object({
   description: z.string().optional(),
   duracao: z.number().int().positive(),
   preco: z.number().nonnegative(),
-  photo: z.union([z.string().url(), z.literal("")]).optional().nullable().transform((v) => (v === "" ? null : v)),
+  photo: z.string().optional().nullable().transform((v) => (v === "" ? null : v)),
   profissionalIds: z.array(z.string()).optional(),
 });
 
@@ -103,9 +103,12 @@ export async function POST(request: Request) {
         barbeariaId,
       },
     });
-    if (profissionalIds?.length) {
+    const idsToLink = profissionalIds?.length
+      ? profissionalIds
+      : (await prisma.profissional.findMany({ where: { barbeariaId }, select: { id: true } })).map((p) => p.id);
+    if (idsToLink.length) {
       await prisma.profissionalServico.createMany({
-        data: profissionalIds.map((profissionalId) => ({
+        data: idsToLink.map((profissionalId) => ({
           profissionalId,
           servicoId: servico.id,
         })),
@@ -132,8 +135,11 @@ export async function POST(request: Request) {
           duracao,
           Number(preco)
         );
-        if (profissionalIds?.length) {
-          for (const profissionalId of profissionalIds) {
+        const idsToLink = profissionalIds?.length
+          ? profissionalIds
+          : (await prisma.profissional.findMany({ where: { barbeariaId }, select: { id: true } })).map((p) => p.id);
+        if (idsToLink.length) {
+          for (const profissionalId of idsToLink) {
             await prisma.$executeRawUnsafe(
               `INSERT INTO "ProfissionalServico" ("profissionalId", "servicoId") VALUES ($1, $2) ON CONFLICT ("profissionalId", "servicoId") DO NOTHING`,
               profissionalId,

@@ -160,7 +160,16 @@ export default function ServicosPage() {
           <h1 className="text-2xl font-bold tracking-tight">Serviços</h1>
           <p className="text-muted-foreground mt-1 text-sm">Serviços oferecidos pela barbearia.</p>
         </div>
-        <Button onClick={() => setShowForm((v) => !v)} variant={showForm ? "outline" : "default"} className="flex items-center gap-2">
+        <Button
+          onClick={() => {
+            setShowForm((v) => {
+              if (!v && profissionais.length) setProfissionalIds(profissionais.map((p) => p.id));
+              return !v;
+            });
+          }}
+          variant={showForm ? "outline" : "default"}
+          className="flex items-center gap-2"
+        >
           <Plus className="h-4 w-4" />
           {showForm ? "Cancelar" : "Novo serviço"}
         </Button>
@@ -227,7 +236,17 @@ export default function ServicosPage() {
               <PhotoUpload value={photo || null} onChange={(url) => setPhoto(url ?? "")} label="Foto" rounded="lg" />
               {profissionais.length > 0 && (
                 <div className="space-y-2">
-                  <Label>Profissionais que realizam</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Profissionais que realizam</Label>
+                    <div className="flex gap-1">
+                      <Button type="button" variant="ghost" size="sm" className="text-xs h-7" onClick={() => setProfissionalIds(profissionais.map((x) => x.id))}>
+                        Selecionar todos
+                      </Button>
+                      <Button type="button" variant="ghost" size="sm" className="text-xs h-7" onClick={() => setProfissionalIds([])}>
+                        Desmarcar
+                      </Button>
+                    </div>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {profissionais.map((p) => (
                       <label
@@ -334,7 +353,17 @@ export default function ServicosPage() {
                   <PhotoUpload value={editPhoto || null} onChange={(url) => setEditPhoto(url ?? "")} label="Foto" rounded="lg" />
                   {profissionais.length > 0 && (
                     <div className="space-y-2">
-                      <Label>Profissionais que realizam</Label>
+                      <div className="flex items-center justify-between">
+                        <Label>Profissionais que realizam</Label>
+                        <div className="flex gap-1">
+                          <Button type="button" variant="ghost" size="sm" className="text-xs h-7" onClick={() => setEditProfissionalIds(profissionais.map((x) => x.id))}>
+                            Selecionar todos
+                          </Button>
+                          <Button type="button" variant="ghost" size="sm" className="text-xs h-7" onClick={() => setEditProfissionalIds([])}>
+                            Desmarcar
+                          </Button>
+                        </div>
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {profissionais.map((p) => (
                           <label key={p.id} className="flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm cursor-pointer hover:bg-muted/50">

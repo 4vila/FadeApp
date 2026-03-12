@@ -11,9 +11,7 @@ export async function POST(request: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
   }
-  if (session.user.role !== "barbearia" && session.user.role !== "admin") {
-    return NextResponse.json({ error: "Sem permissão para enviar imagens." }, { status: 403 });
-  }
+  // Qualquer usuário autenticado pode enviar foto (perfil, serviço, etc.)
 
   const supabase = getSupabaseServer();
   if (!supabase) {
