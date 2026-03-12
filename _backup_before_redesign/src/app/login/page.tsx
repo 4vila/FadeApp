@@ -19,41 +19,34 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           : null;
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center gap-6 bg-background p-4">
+    <div className="relative flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-4">
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-15"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
         style={{ backgroundImage: "url(https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1200&q=80)" }}
       />
-      <div className="absolute inset-0 bg-background/80" />
-      <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-6">
+      <div className="absolute inset-0 bg-background/70" />
+      <div className="relative z-10 flex flex-col items-center gap-4">
         <div className="text-center">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2.5 font-semibold tracking-tight text-foreground transition-colors hover:text-primary"
-          >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
-              <Scissors className="h-5 w-5" strokeWidth={2} aria-hidden />
-            </span>
+          <Link href="/" className="inline-flex items-center gap-2 text-xl font-bold text-primary hover:text-primary/90">
+            <Scissors className="h-6 w-6" strokeWidth={2} aria-hidden />
             FadeApp
           </Link>
-          <p className="mt-2 text-caption text-muted-foreground">Entre na sua conta</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Entre na sua conta</p>
         </div>
         {configErrorMsg && (
           <div
-            className="w-full rounded-xl border border-destructive/50 bg-destructive/10 px-4 py-3 text-center text-caption text-destructive"
+            className="w-full max-w-sm rounded-lg border border-destructive/50 bg-destructive/10 px-3 py-2 text-center text-sm text-destructive"
             role="alert"
           >
             {configErrorMsg}
           </div>
         )}
         <FormLogin />
-        <p className="text-caption text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Não tem conta?{" "}
-          <Link href="/cadastro" className="font-semibold text-primary underline-offset-4 hover:underline">
-            Cadastre-se
-          </Link>
+          <Link href="/cadastro" className="font-medium text-primary underline-offset-4 hover:underline">Cadastre-se</Link>
         </p>
-        <Button variant="link" asChild className="text-caption font-medium">
+        <Button variant="link" asChild className="text-xs">
           <Link href="/">Voltar ao início</Link>
         </Button>
       </div>

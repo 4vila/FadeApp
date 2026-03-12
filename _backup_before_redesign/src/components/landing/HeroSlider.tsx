@@ -39,7 +39,7 @@ export function HeroSlider() {
       {SLIDES.map((slide, i) => (
         <div
           key={slide.src}
-          className={`absolute inset-0 transition-opacity duration-700 ease-out ${
+          className={`absolute inset-0 transition-opacity duration-700 ${
             i === index ? "opacity-100 z-0" : "opacity-0 z-[-1]"
           }`}
         >
@@ -52,23 +52,18 @@ export function HeroSlider() {
             priority={i === 0}
             unoptimized
           />
-          <div
-            className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/15"
-            aria-hidden
-          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
         </div>
       ))}
-      <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+      <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2">
         {SLIDES.map((_, i) => (
           <button
             key={i}
             type="button"
             aria-label={`Slide ${i + 1}`}
             onClick={() => setIndex(i)}
-            className={`h-2 w-8 rounded-full transition-all duration-300 ${
-              i === index
-                ? "bg-primary w-10"
-                : "bg-white/40 hover:bg-white/60"
+            className={`h-1.5 w-6 rounded-full transition-colors ${
+              i === index ? "bg-primary" : "bg-white/50"
             }`}
           />
         ))}

@@ -52,58 +52,47 @@ export function FormLogin() {
   }
 
   return (
-    <Card className="w-full max-w-sm rounded-2xl border border-border/80 bg-card/95 shadow-[var(--shadow-card-hover)]">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-heading-3">Entrar</CardTitle>
-        <CardDescription className="text-caption">Email e senha.</CardDescription>
+    <Card className="w-full max-w-sm border-border bg-card/95 shadow-xl">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">Entrar</CardTitle>
+        <CardDescription className="text-sm">Email e senha.</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {error && (
-            <p
-              className="rounded-xl bg-destructive/15 px-3 py-2.5 text-caption text-destructive"
-              role="alert"
-            >
+            <p className="rounded-md bg-destructive/15 px-2 py-1.5 text-sm text-destructive" role="alert">
               {error}
             </p>
           )}
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-caption font-medium">
-              Email
-            </Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-sm">Email</Label>
             <Input
               id="email"
               type="email"
               placeholder="seu@email.com"
-              className="h-11 rounded-xl"
+              className="h-9"
               {...register("email")}
             />
             {errors.email && (
-              <p className="text-small text-destructive">{errors.email.message}</p>
+              <p className="text-xs text-destructive">{errors.email.message}</p>
             )}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-caption font-medium">
-              Senha
-            </Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-sm">Senha</Label>
             <Input
               id="password"
               type="password"
               placeholder="••••••••"
-              className="h-11 rounded-xl"
+              className="h-9"
               {...register("password")}
             />
             {errors.password && (
-              <p className="text-small text-destructive">{errors.password.message}</p>
+              <p className="text-xs text-destructive">{errors.password.message}</p>
             )}
           </div>
         </CardContent>
         <CardFooter className="pt-0">
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="h-11 w-full rounded-xl font-semibold"
-          >
+          <Button type="submit" disabled={isSubmitting} className="h-9 w-full">
             {isSubmitting ? "Entrando..." : "Entrar"}
           </Button>
         </CardFooter>

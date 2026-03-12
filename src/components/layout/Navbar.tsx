@@ -9,17 +9,28 @@ export function Navbar() {
   const { data: session, status } = useSession();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur">
-      <nav className="container mx-auto flex h-12 max-w-4xl items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2 font-semibold text-lg text-primary hover:text-primary/90">
-          <Scissors className="h-5 w-5" strokeWidth={2} aria-hidden />
-          FadeApp
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
+      <nav className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 font-semibold tracking-tight text-foreground transition-colors hover:text-primary"
+        >
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
+            <Scissors className="h-5 w-5" strokeWidth={2} aria-hidden />
+          </span>
+          <span className="text-lg">FadeApp</span>
         </Link>
-        <div className="flex items-center gap-4">
-          <Link href="/barbearias" className="text-sm text-muted-foreground hover:text-foreground">
+        <div className="flex items-center gap-6">
+          <Link
+            href="/barbearias"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
             Barbearias
           </Link>
-          <Link href="/contato" className="text-sm text-muted-foreground hover:text-foreground">
+          <Link
+            href="/contato"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
             Contato
           </Link>
           {status === "loading" ? (
@@ -27,31 +38,31 @@ export function Navbar() {
           ) : session ? (
             <>
               {session.user.role === "cliente" && (
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="ghost" size="sm" asChild className="font-medium">
                   <Link href="/cliente/dashboard">Minha área</Link>
                 </Button>
               )}
               {session.user.role === "profissional" && (
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="ghost" size="sm" asChild className="font-medium">
                   <Link href="/profissional/dashboard">Minha agenda</Link>
                 </Button>
               )}
               {session.user.role === "admin" && (
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="ghost" size="sm" asChild className="font-medium">
                   <Link href="/admin">Painel</Link>
                 </Button>
               )}
               {session.user.role === "barbearia" && (
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="ghost" size="sm" asChild className="font-medium">
                   <Link href="/barbearia/dashboard">Painel</Link>
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={() => signOut()}>
+              <Button variant="outline" size="sm" onClick={() => signOut()} className="rounded-xl">
                 Sair
               </Button>
             </>
           ) : (
-            <Button variant="default" size="sm" asChild>
+            <Button variant="default" size="sm" asChild className="rounded-xl font-medium shadow-sm">
               <Link href="/login">Entrar</Link>
             </Button>
           )}
