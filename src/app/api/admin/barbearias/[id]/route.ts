@@ -54,10 +54,22 @@ export async function PATCH(
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     if (msg.includes("column") && (msg.includes("does not exist") || msg.includes("não existe"))) {
-      return NextResponse.json(
-        { error: "Banco desatualizado. Execute no servidor: npx prisma migrate deploy" },
-        { status: 503 }
-      );
+      try {
+        await prisma.$executeRawUnsafe(`ALTER TABLE "Barbearia" ADD COLUMN IF NOT EXISTS "ativo" BOOLEAN NOT NULL DEFAULT true`);
+        await prisma.$executeRawUnsafe(`ALTER TABLE "Barbearia" ADD COLUMN IF NOT EXISTS "planoVencidoEm" TIMESTAMP(3)`);
+        await prisma.$executeRawUnsafe(`ALTER TABLE "Barbearia" ADD COLUMN IF NOT EXISTS "planoTipo" TEXT`);
+        const updated = await prisma.barbearia.update({
+          where: { id },
+          data,
+        });
+        return NextResponse.json(updated);
+      } catch (retryErr) {
+        console.error(retryErr);
+        return NextResponse.json(
+          { error: "Banco desatualizado. Execute no servidor: npx prisma migrate deploy" },
+          { status: 503 }
+        );
+      }
     }
     return NextResponse.json({ error: "Barbearia não encontrada ou erro ao atualizar." }, { status: 404 });
   }

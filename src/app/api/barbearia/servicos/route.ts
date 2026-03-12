@@ -13,20 +13,67 @@ const createServicoSchema = z.object({
   profissionalIds: z.array(z.string()).optional(),
 });
 
+/** Fallback quando coluna photo não existe: lista serviços via raw e monta resposta. */
+async function listarServicosFallback(barbeariaId: string) {
+  const rows = await prisma.$queryRawUnsafe<
+    { id: string; name: string; description: string | null; duracao: number; preco: unknown; barbeariaId: string }[]
+  >(
+    `SELECT id, name, description, duracao, preco, "barbeariaId" FROM "Servico" WHERE "barbeariaId" = $1 ORDER BY name ASC`,
+    barbeariaId
+  );
+  const servicoIds = rows.map((r) => r.id);
+  const links =
+    servicoIds.length > 0
+      ? await prisma.$queryRawUnsafe<
+          { servicoId: string; profissionalId: string }[]
+        >(
+          `SELECT "servicoId", "profissionalId" FROM "ProfissionalServico" WHERE "servicoId" = ANY($1::text[])`,
+          servicoIds
+        )
+      : [];
+  const byServico = new Map<string, string[]>();
+  for (const l of links) {
+    const arr = byServico.get(l.servicoId) ?? [];
+    arr.push(l.profissionalId);
+    byServico.set(l.servicoId, arr);
+  }
+  return rows.map((r) => ({
+    ...r,
+    photo: null,
+    createdAt: null,
+    updatedAt: null,
+    profissionais: (byServico.get(r.id) ?? []).map((profissionalId) => ({
+      profissionalId,
+      servicoId: r.id,
+      profissional: { user: { name: null } },
+    })),
+  }));
+}
+
 export async function GET() {
   const access = await requireBarbeariaAccess();
   if ("error" in access) {
     return NextResponse.json({ error: access.error }, { status: access.status });
   }
-  const list = await prisma.servico.findMany({
-    where: { barbeariaId: access.barbeariaId },
-    include: {
-      profissionais: {
-        include: { profissional: { include: { user: { select: { name: true } } } } },
+  const barbeariaId = access.barbeariaId;
+  try {
+    const list = await prisma.servico.findMany({
+      where: { barbeariaId },
+      include: {
+        profissionais: {
+          include: { profissional: { include: { user: { select: { name: true } } } } },
+        },
       },
-    },
-  });
-  return NextResponse.json(list);
+    });
+    return NextResponse.json(list);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (msg.includes("column") && (msg.includes("does not exist") || msg.includes("não existe"))) {
+      const list = await listarServicosFallback(barbeariaId);
+      return NextResponse.json(list);
+    }
+    throw e;
+  }
 }
 
 export async function POST(request: Request) {
