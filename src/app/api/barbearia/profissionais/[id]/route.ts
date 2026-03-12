@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const updateSchema = z.object({
   especialidades: z.string().optional(),
-  photo: z.string().url().optional().nullable(),
+  photo: z.union([z.string().url(), z.literal("")]).optional().nullable().transform((v) => (v === "" ? null : v)),
 });
 
 export async function GET(

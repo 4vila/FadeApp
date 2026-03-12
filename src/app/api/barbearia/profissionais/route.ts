@@ -10,7 +10,7 @@ const createProfissionalSchema = z.object({
   password: z.string().min(6),
   especialidades: z.string().optional(),
   phone: z.string().optional(),
-  photo: z.string().url().optional().nullable(),
+  photo: z.union([z.string().url(), z.literal("")]).optional().nullable().transform((v) => (v === "" ? null : v)),
 });
 
 export async function GET() {

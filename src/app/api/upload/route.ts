@@ -18,7 +18,10 @@ export async function POST(request: NextRequest) {
   const supabase = getSupabaseServer();
   if (!supabase) {
     return NextResponse.json(
-      { error: "Upload não configurado (Supabase Storage)." },
+      {
+        error:
+          "Upload não configurado. Defina NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no .env e crie o bucket 'fotos' no Supabase (Storage) com acesso público de leitura.",
+      },
       { status: 503 }
     );
   }

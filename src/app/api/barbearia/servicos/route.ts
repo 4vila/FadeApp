@@ -8,7 +8,7 @@ const createServicoSchema = z.object({
   description: z.string().optional(),
   duracao: z.number().int().positive(),
   preco: z.number().nonnegative(),
-  photo: z.string().url().optional().nullable(),
+  photo: z.union([z.string().url(), z.literal("")]).optional().nullable().transform((v) => (v === "" ? null : v)),
   profissionalIds: z.array(z.string()).optional(),
 });
 

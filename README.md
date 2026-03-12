@@ -72,9 +72,24 @@ npx prisma migrate deploy
 npx prisma db seed
 ```
 
-O seed cria o usuário administrador **Hares** (email: `hares@estetica.local`, senha: `RaelM040124@`).
+O seed cria o usuário administrador **Hares**
 
-### 5. Usuário administrador
+### 5. Storage (fotos de profissionais e serviços) — Supabase
+
+Se usar Supabase para o banco, configure também o Storage para upload de fotos:
+
+1. No `.env`, defina:
+   - `NEXT_PUBLIC_SUPABASE_URL="https://SEU-PROJECT-REF.supabase.co"`
+   - `SUPABASE_SERVICE_ROLE_KEY="sua-service-role-key"` (em Supabase: Settings → API)
+2. Crie o bucket no Storage (uma vez):
+
+```bash
+npm run storage:init
+```
+
+Isso cria o bucket `fotos` com acesso público de leitura. Se o bucket já existir, o script não altera nada. (email: `hares@estetica.local`, senha: `RaelM040124@`).
+
+### 6. Usuário administrador
 
 | Campo  | Valor                    |
 |--------|--------------------------|
@@ -86,7 +101,7 @@ O seed cria o usuário administrador **Hares** (email: `hares@estetica.local`, s
 - **Criar ou atualizar:** `npm run db:seed`
 - **Uso:** acesse [/login](/login), entre com as credenciais acima e use o link **Painel** na navbar para ir ao painel da barbearia ([/barbearia/dashboard](/barbearia/dashboard)). O admin tem acesso ao painel mesmo sem estar vinculado a uma barbearia (no MVP usa a primeira barbearia do banco).
 
-### 6. Desenvolvimento
+### 7. Desenvolvimento
 
 ```bash
 npm run dev

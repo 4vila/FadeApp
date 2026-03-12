@@ -8,7 +8,7 @@ const updateSchema = z.object({
   description: z.string().optional(),
   duracao: z.number().int().positive().optional(),
   preco: z.number().nonnegative().optional(),
-  photo: z.string().url().optional().nullable(),
+  photo: z.union([z.string().url(), z.literal("")]).optional().nullable().transform((v) => (v === "" ? null : v)),
   profissionalIds: z.array(z.string()).optional(),
 });
 
