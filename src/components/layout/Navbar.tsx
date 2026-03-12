@@ -62,9 +62,17 @@ export function Navbar() {
               </Button>
             </>
           ) : (
-            <Button variant="default" size="sm" asChild className="rounded-xl font-medium shadow-sm">
-              <Link href="/login">Entrar</Link>
-            </Button>
+            <>
+              <Link
+                href="/cadastro"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Cadastre-se
+              </Link>
+              <Button variant="default" size="sm" asChild className="rounded-xl font-medium shadow-sm">
+                <Link href="/login">Entrar</Link>
+              </Button>
+            </>
           )}
         </div>
       </nav>

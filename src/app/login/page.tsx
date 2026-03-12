@@ -56,6 +56,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
         )}
         <FormLogin />
+        <p className="text-caption text-muted-foreground">
+          Não tem conta?{" "}
+          <Link href="/cadastro" className="font-medium text-primary underline-offset-4 hover:underline">
+            Cadastre-se
+          </Link>
+        </p>
         <Button variant="link" asChild className="text-caption font-medium">
           <Link href="/">Voltar ao início</Link>
         </Button>
