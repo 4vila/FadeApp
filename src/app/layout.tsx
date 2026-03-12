@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${plusJakarta.variable} ${geistMono.variable} font-sans antialiased bg-background text-foreground`}>
+      <body className={`${plusJakarta.variable} ${geistMono.variable} min-w-0 font-sans antialiased bg-background text-foreground`}>
         <SessionProvider>
           {children}
           <HelpWidget />

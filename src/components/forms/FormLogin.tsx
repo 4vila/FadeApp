@@ -58,7 +58,7 @@ export function FormLogin() {
         <CardDescription className="text-caption">Email e senha.</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pb-2">
           {error && (
             <p
               className="rounded-xl bg-destructive/15 px-3 py-2.5 text-caption text-destructive"
@@ -98,7 +98,7 @@ export function FormLogin() {
             )}
           </div>
         </CardContent>
-        <CardFooter className="pt-0">
+        <CardFooter className="pt-6">
           <Button
             type="submit"
             disabled={isSubmitting}

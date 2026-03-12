@@ -40,15 +40,15 @@ export default function BarbeariasPage() {
   }, [nome, cidade]);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen min-w-0 flex-col">
       <Navbar />
-      <main className="flex-1">
+      <main className="min-w-0 flex-1">
         {/* Hero */}
-        <section className="border-b border-border/50 bg-gradient-to-b from-muted/40 to-transparent px-4 py-14 sm:px-6 md:py-20">
+        <section className="border-b border-border/50 bg-gradient-to-b from-muted/40 to-transparent px-4 py-10 sm:px-6 sm:py-14 md:py-20">
           <div className="container mx-auto max-w-5xl">
             <div className="flex flex-col items-center text-center">
-              <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-sm">
-                <Scissors className="h-8 w-8" strokeWidth={2} aria-hidden />
+              <div className="mb-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-sm sm:mb-5 sm:h-16 sm:w-16">
+                <Scissors className="h-7 w-7 sm:h-8 sm:w-8" strokeWidth={2} aria-hidden />
               </div>
               <h1 className="text-heading-1 text-foreground">
                 Barbearias
@@ -61,7 +61,7 @@ export default function BarbeariasPage() {
         </section>
 
         {/* Filtros */}
-        <section className="sticky top-16 z-40 border-b border-border/50 bg-background/90 px-4 py-4 backdrop-blur-md sm:px-6">
+        <section className="sticky top-14 z-40 min-w-0 border-b border-border/50 bg-background/90 px-4 py-4 backdrop-blur-md sm:top-16 sm:px-6">
           <div className="container mx-auto max-w-5xl">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6">
               <div className="flex-1 space-y-2">
@@ -99,7 +99,7 @@ export default function BarbeariasPage() {
         </section>
 
         {/* Lista */}
-        <section className="container mx-auto max-w-5xl px-4 py-10 sm:px-6">
+        <section className="container mx-auto min-w-0 max-w-5xl px-4 py-8 sm:py-10 sm:px-6">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <Loader2 className="h-12 w-12 animate-spin text-primary" aria-hidden />
@@ -125,7 +125,7 @@ export default function BarbeariasPage() {
                 {barbearias.length} {barbearias.length === 1 ? "barbearia" : "barbearias"} encontrada
                 {barbearias.length !== 1 ? "s" : ""}
               </p>
-              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid min-w-0 gap-6 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
                 {barbearias.map((b) => (
                   <BarbeariaCard
                     key={b.id}

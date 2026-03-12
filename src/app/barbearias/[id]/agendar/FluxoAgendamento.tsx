@@ -56,6 +56,7 @@ export function FluxoAgendamento({
       const res = await fetch("/api/agendamentos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({
           barbeariaId,
           profissionalId: profId,
@@ -63,28 +64,45 @@ export function FluxoAgendamento({
           dataHora: dataHora.toISOString(),
         }),
       });
-      const json = await res.json().catch(() => ({}));
+      const text = await res.text();
+      let json: { error?: string } = {};
+      try {
+        json = text ? JSON.parse(text) : {};
+      } catch {
+        json = {};
+      }
       if (!res.ok) {
-        setError(json.error ?? "Erro ao confirmar.");
+        setError(
+          json.error ??
+            (res.status === 401
+              ? "Faça login para agendar."
+              : res.status === 409
+                ? "Horário não disponível."
+                : "Erro ao confirmar. Tente novamente.")
+        );
         setSubmitting(false);
         return;
       }
       router.push("/cliente/dashboard");
       router.refresh();
     } catch {
-      setError("Erro ao confirmar agendamento.");
+      setError("Erro ao confirmar agendamento. Verifique sua conexão e tente novamente.");
       setSubmitting(false);
     }
   }
 
   return (
-    <div className="mt-6 max-w-lg">
-      {error && <p className="mb-4 text-sm text-destructive">{error}</p>}
+    <div className="mx-auto mt-8 max-w-lg">
+      {error && (
+        <div className="mb-6 rounded-xl border border-destructive/50 bg-destructive/10 px-4 py-3 text-caption text-destructive">
+          {error}
+        </div>
+      )}
 
       {step === 1 && (
-        <Card>
+        <Card className="overflow-hidden rounded-2xl border border-border/80 shadow-[var(--shadow-card)]">
           <CardHeader>
-            <h2 className="font-semibold">1. Escolha o serviço</h2>
+            <h2 className="text-heading-3">1. Escolha o serviço</h2>
           </CardHeader>
           <CardContent className="space-y-2">
             {servicos.map((s) => (
@@ -92,7 +110,7 @@ export function FluxoAgendamento({
                 key={s.id}
                 type="button"
                 onClick={() => { setServicoId(s.id); setStep(2); }}
-                className="flex w-full justify-between rounded border p-3 text-left hover:bg-muted/50"
+                className="flex w-full justify-between rounded-xl border border-border/80 p-4 text-left transition-colors hover:bg-muted/50"
               >
                 <span>{s.name}</span>
                 <span className="text-muted-foreground">
@@ -105,9 +123,9 @@ export function FluxoAgendamento({
       )}
 
       {step === 2 && servicoId && (
-        <Card>
+        <Card className="overflow-hidden rounded-2xl border border-border/80 shadow-[var(--shadow-card)]">
           <CardHeader>
-            <h2 className="font-semibold">2. Escolha o profissional</h2>
+            <h2 className="text-heading-3">2. Escolha o profissional</h2>
           </CardHeader>
           <CardContent className="space-y-2">
             {profissionais.map((p) => (
@@ -115,7 +133,7 @@ export function FluxoAgendamento({
                 key={p.id}
                 type="button"
                 onClick={() => { setProfissionalId(p.id); setStep(3); }}
-                className="flex w-full justify-between rounded border p-3 text-left hover:bg-muted/50"
+                className="flex w-full justify-between rounded-xl border border-border/80 p-4 text-left transition-colors hover:bg-muted/50"
               >
                 <span>{p.user.name ?? "Profissional"}</span>
                 {p.especialidades && (
@@ -128,15 +146,15 @@ export function FluxoAgendamento({
             )}
           </CardContent>
           <CardContent>
-            <Button variant="outline" onClick={() => setStep(1)}>Voltar</Button>
+            <Button variant="outline" className="rounded-xl" onClick={() => setStep(1)}>Voltar</Button>
           </CardContent>
         </Card>
       )}
 
       {step === 3 && servicoId && (
-        <Card>
+        <Card className="overflow-hidden rounded-2xl border border-border/80 shadow-[var(--shadow-card)]">
           <CardHeader>
-            <h2 className="font-semibold">3. Escolha a data</h2>
+            <h2 className="text-heading-3">3. Escolha a data</h2>
           </CardHeader>
           <CardContent className="space-y-4">
             <input
@@ -144,27 +162,30 @@ export function FluxoAgendamento({
               value={data}
               onChange={(e) => setData(e.target.value)}
               min={new Date().toISOString().slice(0, 10)}
-              className="w-full rounded border px-3 py-2"
+              className="h-11 w-full rounded-xl border border-border/80 bg-background px-3 py-2"
             />
-            <Button onClick={() => setStep(2)} variant="outline">Voltar</Button>
-            <Button
-              disabled={!data}
-              onClick={() => { carregarSlots(); setStep(4); }}
-            >
-              Ver horários
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => setStep(2)} variant="outline" className="rounded-xl">Voltar</Button>
+              <Button
+                disabled={!data}
+                className="rounded-xl font-semibold"
+                onClick={() => { carregarSlots(); setStep(4); }}
+              >
+                Ver horários
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
 
       {step === 4 && servicoId && (
-        <Card>
+        <Card className="overflow-hidden rounded-2xl border border-border/80 shadow-[var(--shadow-card)]">
           <CardHeader>
-            <h2 className="font-semibold">4. Escolha o horário</h2>
+            <h2 className="text-heading-3">4. Escolha o horário</h2>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             {loadingSlots ? (
-              <p>Carregando horários...</p>
+              <p className="text-caption text-muted-foreground">Carregando horários...</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {slots.map((s) => (
@@ -172,20 +193,22 @@ export function FluxoAgendamento({
                     key={s}
                     variant={slot === s ? "default" : "outline"}
                     size="sm"
+                    className="rounded-xl"
                     onClick={() => setSlot(s)}
                   >
                     {s}
                   </Button>
                 ))}
                 {slots.length === 0 && !loadingSlots && (
-                  <p className="text-muted-foreground">Nenhum horário disponível nesta data.</p>
+                  <p className="text-caption text-muted-foreground">Nenhum horário disponível nesta data.</p>
                 )}
               </div>
             )}
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep(3)}>Voltar</Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" className="rounded-xl" onClick={() => setStep(3)}>Voltar</Button>
               <Button
                 disabled={!slot || submitting}
+                className="rounded-xl font-semibold"
                 onClick={confirmar}
               >
                 {submitting ? "Confirmando..." : "Confirmar agendamento"}

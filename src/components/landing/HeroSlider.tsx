@@ -47,8 +47,8 @@ export function HeroSlider() {
             src={slide.src}
             alt={slide.alt}
             fill
-            className="object-cover"
-            sizes="100vw"
+            className="object-cover object-center"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
             priority={i === 0}
             unoptimized
           />
@@ -58,16 +58,16 @@ export function HeroSlider() {
           />
         </div>
       ))}
-      <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+      <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-1.5 sm:bottom-6 sm:gap-2">
         {SLIDES.map((_, i) => (
           <button
             key={i}
             type="button"
             aria-label={`Slide ${i + 1}`}
             onClick={() => setIndex(i)}
-            className={`h-2 w-8 rounded-full transition-all duration-300 ${
+            className={`h-1.5 w-6 rounded-full transition-all duration-300 sm:h-2 sm:w-8 ${
               i === index
-                ? "bg-primary w-10"
+                ? "w-8 bg-primary sm:w-10"
                 : "bg-white/40 hover:bg-white/60"
             }`}
           />

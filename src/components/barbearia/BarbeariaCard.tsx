@@ -15,14 +15,16 @@ type BarbeariaCardProps = {
 
 export function BarbeariaCard({ id, name, address, city, phone, logo }: BarbeariaCardProps) {
   return (
-    <Card className="group overflow-hidden rounded-2xl border border-border/80 bg-card shadow-[var(--shadow-card)] transition-all duration-300 hover:border-primary/30 hover:shadow-[var(--shadow-card-hover)] hover:shadow-primary/5">
-      <Link href={`/barbearias/${id}`} className="block">
-        <div className="relative aspect-[2/1] w-full overflow-hidden bg-muted/50">
+    <Card className="group min-w-0 overflow-hidden rounded-2xl border border-border/80 bg-card shadow-[var(--shadow-card)] transition-all duration-300 hover:border-primary/30 hover:shadow-[var(--shadow-card-hover)] hover:shadow-primary/5">
+      <Link href={`/barbearias/${id}`} className="block min-w-0">
+        <div className="relative aspect-[2/1] w-full min-w-0 overflow-hidden bg-muted/50">
           {logo ? (
             <img
               src={logo}
               alt={name}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-muted-foreground/40">

@@ -44,11 +44,11 @@ export default async function AgendarPage({
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
-      <main className="container flex-1 px-4 py-8">
-        <Button variant="link" asChild>
+      <main className="container mx-auto max-w-3xl flex-1 px-4 py-8 sm:px-6">
+        <Button variant="link" asChild className="text-caption font-medium">
           <Link href={`/barbearias/${barbeariaId}`}>← Voltar</Link>
         </Button>
-        <h1 className="mt-4 text-2xl font-bold">Agendar — {barbearia.name}</h1>
+        <h1 className="mt-4 text-heading-1">Agendar — {barbearia.name}</h1>
         <FluxoAgendamento
           barbeariaId={barbeariaId}
           servicos={barbearia.servicos}

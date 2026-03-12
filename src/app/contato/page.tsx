@@ -11,13 +11,13 @@ const WHATSAPP_MSG = encodeURIComponent(
 
 export default function ContatoPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen min-w-0 flex-col">
       <Navbar />
-      <div className="container mx-auto flex-1 max-w-2xl px-4 py-12 sm:px-6 sm:py-16">
-        <div className="mb-10 text-center sm:text-left">
-          <h1 className="text-heading-1 flex items-center justify-center gap-3 text-foreground sm:justify-start">
-            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-              <MessageCircle className="h-7 w-7" aria-hidden />
+      <div className="container mx-auto min-w-0 flex-1 max-w-2xl px-4 py-10 sm:px-6 sm:py-16">
+        <div className="mb-8 text-center sm:mb-10 sm:text-left">
+          <h1 className="text-heading-1 flex flex-wrap items-center justify-center gap-2 text-foreground sm:gap-3 sm:justify-start">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary sm:h-12 sm:w-12">
+              <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden />
             </span>
             Contato
           </h1>
@@ -26,7 +26,7 @@ export default function ContatoPage() {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border/80 bg-card/95 p-6 shadow-[var(--shadow-card)] transition-all duration-300 hover:shadow-[var(--shadow-card-hover)] hover:border-primary/20 focus-within:ring-2 focus-within:ring-primary/20">
+        <div className="min-w-0 rounded-2xl border border-border/80 bg-card/95 p-4 shadow-[var(--shadow-card)] transition-all duration-300 hover:shadow-[var(--shadow-card-hover)] hover:border-primary/20 focus-within:ring-2 focus-within:ring-primary/20 sm:p-6">
           <div className="mb-4 flex items-center gap-3 text-primary">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
               <Phone className="h-5 w-5" aria-hidden />

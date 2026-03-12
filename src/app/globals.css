@@ -118,10 +118,26 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans scroll-smooth;
+  }
+  body {
+    @apply bg-background text-foreground;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  img:not([class*="object-cover"]) {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+  svg {
+    max-width: 100%;
+    height: auto;
+    flex-shrink: 0;
   }
 }

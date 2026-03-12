@@ -19,22 +19,22 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           : null;
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center gap-6 bg-background p-4">
+    <div className="relative flex min-h-screen min-w-0 flex-col items-center justify-center gap-4 bg-background p-4 sm:gap-6">
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-15"
         style={{ backgroundImage: "url(https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1200&q=80)" }}
       />
       <div className="absolute inset-0 bg-background/80" />
-      <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-6">
-        <div className="text-center">
+      <div className="relative z-10 flex w-full min-w-0 max-w-sm flex-col items-center gap-4 sm:gap-6">
+        <div className="w-full min-w-0 text-center">
           <Link
             href="/"
-            className="inline-flex items-center gap-2.5 font-semibold tracking-tight text-foreground transition-colors hover:text-primary"
+            className="inline-flex items-center gap-2 font-semibold tracking-tight text-foreground transition-colors hover:text-primary sm:gap-2.5"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
-              <Scissors className="h-5 w-5" strokeWidth={2} aria-hidden />
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary sm:h-10 sm:w-10">
+              <Scissors className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={2} aria-hidden />
             </span>
-            FadeApp
+            <span className="truncate">FadeApp</span>
           </Link>
           <p className="mt-2 text-caption text-muted-foreground">Entre na sua conta</p>
         </div>
@@ -47,12 +47,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
         )}
         <FormLogin />
-        <p className="text-caption text-muted-foreground">
-          Não tem conta?{" "}
-          <Link href="/cadastro" className="font-semibold text-primary underline-offset-4 hover:underline">
-            Cadastre-se
-          </Link>
-        </p>
         <Button variant="link" asChild className="text-caption font-medium">
           <Link href="/">Voltar ao início</Link>
         </Button>

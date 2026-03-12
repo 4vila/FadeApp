@@ -17,31 +17,31 @@ export default function HomePage() {
       <Navbar />
       <main className="flex-1">
         {/* Hero com slider */}
-        <section className="relative min-h-[85vh] min-h-[32rem] md:min-h-[36rem]">
+        <section className="relative min-h-[28rem] sm:min-h-[36rem] md:min-h-[40rem]">
           <HeroSlider />
-          <div className="relative z-[1] flex h-full min-h-[32rem] flex-col items-center justify-center px-4 py-20 text-center md:min-h-[36rem]">
-            <h1 className="text-display flex items-center justify-center gap-3 font-bold tracking-tight text-white drop-shadow-lg">
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm md:h-16 md:w-16">
-                <Scissors className="h-8 w-8 text-white md:h-9 md:w-9" strokeWidth={2} aria-hidden />
+          <div className="relative z-[1] flex min-h-[28rem] flex-col items-center justify-center px-4 py-12 text-center sm:min-h-[36rem] sm:py-16 md:min-h-[40rem] md:py-20">
+            <h1 className="text-display flex flex-wrap items-center justify-center gap-2 font-bold tracking-tight text-white drop-shadow-lg sm:gap-3">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm sm:h-14 sm:w-14 md:h-16 md:w-16">
+                <Scissors className="h-6 w-6 text-white sm:h-8 sm:w-8 md:h-9 md:w-9" strokeWidth={2} aria-hidden />
               </span>
               <span>FadeApp</span>
             </h1>
-            <p className="mt-4 text-lg font-medium tracking-tight text-white/95 md:text-xl">
+            <p className="mt-3 text-base font-medium tracking-tight text-white/95 sm:mt-4 sm:text-lg md:text-xl">
               Agendamento para barbearias
             </p>
-            <p className="mt-3 max-w-xl text-base leading-relaxed text-white/90">
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/90 sm:mt-3 sm:text-base">
               Conecte sua barbearia aos clientes. Agende horários em um só lugar.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <div className="mt-6 flex w-full max-w-md flex-wrap justify-center gap-3 px-2 sm:mt-8 sm:max-w-none sm:gap-4">
               <Link
                 href="/contato"
-                className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98]"
+                className="inline-flex h-10 min-w-0 flex-1 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] sm:h-11 sm:flex-none sm:px-6"
               >
                 Quero para minha barbearia
               </Link>
               <Link
                 href="/barbearias"
-                className="inline-flex h-11 items-center justify-center rounded-xl border-2 border-white/30 bg-white/10 px-6 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20 hover:border-white/40 active:scale-[0.98]"
+                className="inline-flex h-10 min-w-0 flex-1 items-center justify-center rounded-xl border-2 border-white/30 bg-white/10 px-4 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20 hover:border-white/40 active:scale-[0.98] sm:h-11 sm:flex-none sm:px-6"
               >
                 Agendar agora
               </Link>
@@ -50,7 +50,7 @@ export default function HomePage() {
         </section>
 
         {/* Benefícios */}
-        <section className="relative py-16 md:py-24">
+        <section className="relative py-12 sm:py-16 md:py-24">
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-25"
             style={{ backgroundImage: `url(${BENEFICIOS_BG})` }}
@@ -60,7 +60,7 @@ export default function HomePage() {
             <h2 className="text-heading-1 text-center text-primary">
               Benefícios
             </h2>
-            <div className="mx-auto mt-10 grid gap-6 sm:grid-cols-3">
+            <div className="mx-auto mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
               <AnimateOnScroll delay={0}>
                 <div className="rounded-2xl border border-border/80 bg-card/95 p-6 shadow-[var(--shadow-card)] backdrop-blur transition-all duration-300 hover:shadow-[var(--shadow-card-hover)] hover:border-primary/20">
                   <div className="h-1 w-12 rounded-full bg-primary" />
@@ -96,7 +96,7 @@ export default function HomePage() {
         </section>
 
         {/* CTA */}
-        <section className="relative py-16 md:py-24">
+        <section className="relative py-12 sm:py-16 md:py-24">
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
             style={{ backgroundImage: `url(${CTA_BG})` }}

@@ -12,26 +12,40 @@ export default async function ClienteDashboardLayout({
   if (session.user.role !== "cliente") redirect("/login?error=Unauthorized");
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="border-b bg-muted/30 px-4 py-3">
-        <div className="container flex items-center justify-between">
-          <Link href="/cliente/dashboard" className="font-semibold">
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="sticky top-0 z-40 border-b border-border/50 bg-background/90 px-4 py-4 backdrop-blur-md">
+        <div className="mx-auto flex max-w-4xl items-center justify-between">
+          <Link
+            href="/cliente/dashboard"
+            className="text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-primary"
+          >
             Minha área
           </Link>
-          <nav className="flex gap-4 text-sm">
-            <Link href="/cliente/dashboard" className="hover:underline">
+          <nav className="flex items-center gap-6 text-sm">
+            <Link
+              href="/cliente/dashboard"
+              className="font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
               Agendamentos
             </Link>
-            <Link href="/cliente/dashboard/perfil" className="hover:underline">
+            <Link
+              href="/cliente/dashboard/perfil"
+              className="font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
               Perfil
             </Link>
-            <Link href="/" className="text-muted-foreground hover:underline">
+            <Link
+              href="/"
+              className="font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
               Voltar ao site
             </Link>
           </nav>
         </div>
       </header>
-      <main className="container flex-1 px-4 py-6">{children}</main>
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-6">
+        {children}
+      </main>
     </div>
   );
 }
