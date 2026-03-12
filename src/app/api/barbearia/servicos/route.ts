@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const parsed = createServicoSchema.safeParse(body);
   if (!parsed.success) {
-    const first = parsed.error.errors[0];
+    const first = parsed.error.issues[0];
     const msg = first?.message ? `${first.path.join(".")}: ${first.message}` : "Dados inválidos.";
     return NextResponse.json({ error: msg, details: parsed.error.flatten() }, { status: 400 });
   }
