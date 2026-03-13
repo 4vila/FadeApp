@@ -10,9 +10,19 @@ type BarbeariaMapItem = {
   longitude: number | null;
 };
 
+// Tipagem mínima para a API do Google Maps (carregada via script no browser)
+interface GoogleMapsAPI {
+  maps: {
+    Map: new (el: HTMLElement, opts?: object) => { fitBounds: (b: unknown, p?: number) => void };
+    Marker: new (opts: object) => void;
+    LatLngBounds: new () => { extend: (p: { lat: number; lng: number }) => void };
+    SymbolPath: { CIRCLE: number };
+  };
+}
+
 declare global {
   interface Window {
-    google?: typeof google;
+    google?: GoogleMapsAPI;
     initMapBarbearias?: () => void;
   }
 }
