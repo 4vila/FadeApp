@@ -17,13 +17,13 @@ async function listarBarbeariasFallback(nome?: string, cidade?: string) {
     values.push(`%${cidade}%`);
   }
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
-  const barbearias = await prisma.$queryRawUnsafe<
+  const rows = await prisma.$queryRawUnsafe<
     { id: string; name: string; address: string | null; city: string | null; phone: string | null; logo: string | null }[]
   >(
     `SELECT id, name, address, city, phone, logo FROM "Barbearia" ${where} ORDER BY name ASC`,
     ...values
   );
-  return barbearias;
+  return rows.map((r) => ({ ...r, latitude: null as number | null, longitude: null as number | null }));
 }
 
 export async function GET(request: NextRequest) {
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     if (nome) where.name = { contains: nome, mode: "insensitive" };
     if (cidade) where.city = { contains: cidade, mode: "insensitive" };
 
-    let barbearias: { id: string; name: string; address: string | null; city: string | null; phone: string | null; logo: string | null }[];
+    let barbearias: { id: string; name: string; address: string | null; city: string | null; phone: string | null; logo: string | null; latitude: number | null; longitude: number | null }[];
     try {
       barbearias = await prisma.barbearia.findMany({
         where,
@@ -55,6 +55,8 @@ export async function GET(request: NextRequest) {
           city: true,
           phone: true,
           logo: true,
+          latitude: true,
+          longitude: true,
         },
         orderBy: { name: "asc" },
       });

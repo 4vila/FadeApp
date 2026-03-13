@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { BarbeariaCard } from "@/components/barbearia/BarbeariaCard";
+import { MapaBarbearias } from "@/components/barbearia/MapaBarbearias";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,15 +18,28 @@ type BarbeariaItem = {
   city: string | null;
   phone: string | null;
   logo: string | null;
+  latitude: number | null;
+  longitude: number | null;
 };
+
+function dist(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const R = 6371;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const x =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
 
 export default function BarbeariasPage() {
   const [barbearias, setBarbearias] = useState<BarbeariaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [nome, setNome] = useState("");
   const [cidade, setCidade] = useState("");
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
-  useEffect(() => {
+  const fetchBarbearias = useCallback(() => {
     const params = new URLSearchParams();
     if (nome) params.set("nome", nome);
     if (cidade) params.set("cidade", cidade);
@@ -38,6 +52,31 @@ export default function BarbeariasPage() {
       .catch(() => setBarbearias([]))
       .finally(() => setLoading(false));
   }, [nome, cidade]);
+
+  useEffect(() => {
+    fetchBarbearias();
+  }, [fetchBarbearias]);
+
+  useEffect(() => {
+    if (!navigator?.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (p) => setUserLocation({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      () => {},
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+    );
+  }, []);
+
+  const barbeariasOrdenadas =
+    userLocation && barbearias.some((b) => b.latitude != null && b.longitude != null)
+      ? [...barbearias].sort((a, b) => {
+          if (a.latitude == null || a.longitude == null) return 1;
+          if (b.latitude == null || b.longitude == null) return -1;
+          return (
+            dist(userLocation, { lat: a.latitude, lng: a.longitude }) -
+            dist(userLocation, { lat: b.latitude, lng: b.longitude })
+          );
+        })
+      : barbearias;
 
   return (
     <div className="flex min-h-screen min-w-0 flex-col">
@@ -98,6 +137,15 @@ export default function BarbeariasPage() {
           </div>
         </section>
 
+        {/* Mapa */}
+        <section className="container mx-auto min-w-0 max-w-5xl px-4 py-6 sm:px-6">
+          <h2 className="text-heading-3 mb-4 flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-primary" />
+            Onde estamos
+          </h2>
+          <MapaBarbearias barbearias={barbearias} userLocation={userLocation} />
+        </section>
+
         {/* Lista */}
         <section className="container mx-auto min-w-0 max-w-5xl px-4 py-8 sm:py-10 sm:px-6">
           {loading ? (
@@ -122,11 +170,12 @@ export default function BarbeariasPage() {
           ) : (
             <>
               <p className="mb-6 text-caption text-muted-foreground">
-                {barbearias.length} {barbearias.length === 1 ? "barbearia" : "barbearias"} encontrada
-                {barbearias.length !== 1 ? "s" : ""}
+                {barbeariasOrdenadas.length} {barbeariasOrdenadas.length === 1 ? "barbearia" : "barbearias"} encontrada
+                {barbeariasOrdenadas.length !== 1 ? "s" : ""}
+                {userLocation && barbearias.some((b) => b.latitude != null) && " (mais próximas primeiro)"}
               </p>
               <div className="grid min-w-0 gap-6 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
-                {barbearias.map((b) => (
+                {barbeariasOrdenadas.map((b) => (
                   <BarbeariaCard
                     key={b.id}
                     id={b.id}

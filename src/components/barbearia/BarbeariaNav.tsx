@@ -21,6 +21,9 @@ export function BarbeariaNav() {
         <Link href={base} className={linkClass(base)}>
           Resumo
         </Link>
+        <Link href={`${base}/perfil`} className={linkClass(`${base}/perfil`)}>
+          Perfil da barbearia
+        </Link>
         <Link href={`${base}/profissionais`} className={linkClass(`${base}/profissionais`)}>
           Profissionais
         </Link>

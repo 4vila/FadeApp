@@ -53,6 +53,8 @@ model Barbearia {
   city                  String?   // para filtro por localidade
   phone                 String?
   logo                  String?
+  latitude              Float?    // para mapa
+  longitude             Float?
   photos                Json?     // string[] URLs
   horarioFuncionamento   Json?    // { [dia: string]: { inicio, fim } }
   ativo                 Boolean   @default(true)

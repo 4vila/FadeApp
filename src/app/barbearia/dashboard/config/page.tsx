@@ -6,17 +6,29 @@ import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhotoUpload } from "@/components/ui/photo-upload";
+import { User } from "lucide-react";
 
 export default function ConfigPage() {
   const router = useRouter();
   const [horas, setHoras] = useState(2);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [fotoDono, setFotoDono] = useState<string | null>(null);
   const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmSenha, setConfirmSenha] = useState("");
   const [msgSenha, setMsgSenha] = useState<string | null>(null);
   const [excluindo, setExcluindo] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/usuario")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.image != null) setFotoDono(data.image);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch("/api/barbearia/regras-cancelamento")
@@ -91,10 +103,37 @@ export default function ConfigPage() {
 
   if (loading) return <p>Carregando...</p>;
 
+  async function salvarFoto() {
+    setSaving(true);
+    try {
+      await fetch("/api/usuario", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: fotoDono || null }),
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="max-w-2xl space-y-10">
       <h1 className="text-2xl font-bold">Configurações</h1>
       <p className="text-muted-foreground">Regras de cancelamento e opções da sua conta.</p>
+
+      <div className="rounded-xl border border-border/80 bg-card/50 p-6 shadow-sm">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <User className="h-5 w-5" />
+          Sua foto (dono da barbearia)
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">Foto do seu perfil de usuário. Opcional.</p>
+        <div className="mt-4">
+          <PhotoUpload value={fotoDono} onChange={setFotoDono} label="" rounded="full" />
+        </div>
+        <Button type="button" onClick={salvarFoto} disabled={saving} className="mt-3 rounded-xl">
+          {saving ? "Salvando..." : "Salvar foto"}
+        </Button>
+      </div>
 
       <div className="rounded-xl border border-border/80 bg-card/50 p-6 shadow-sm">
         <h2 className="text-lg font-semibold">Cancelamento</h2>

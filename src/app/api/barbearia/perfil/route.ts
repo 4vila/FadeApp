@@ -8,7 +8,9 @@ const updatePerfilSchema = z.object({
   address: z.string().optional(),
   city: z.string().optional(),
   phone: z.string().optional(),
-  logo: z.string().url().optional().nullable(),
+  logo: z.string().optional().nullable(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
   horarioFuncionamento: z.record(z.string(), z.object({ inicio: z.string(), fim: z.string() })).optional(),
 });
 
