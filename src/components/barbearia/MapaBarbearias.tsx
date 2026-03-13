@@ -4,7 +4,6 @@ import React, { useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapPin } from "lucide-react";
 import Link from "next/link";
 
 type BarbeariaMapItem = {
@@ -82,30 +81,20 @@ export function MapaBarbearias({
     return [BRASIL_CENTRO, ZOOM_PADRAO];
   }, [centro, comCoords]);
 
-  if (comCoords.length === 0) {
-    return (
-      <div className="rounded-xl border border-border/80 bg-muted/30 p-6 text-center">
-        <MapPin className="mx-auto h-10 w-10 text-muted-foreground" />
-        <p className="mt-2 text-sm text-muted-foreground">
-          Nenhuma barbearia com endereço no mapa. Cadastre latitude e longitude no perfil da barbearia.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-2">
       <p className="text-sm font-medium text-muted-foreground">
-        {comCoords.length} {comCoords.length === 1 ? "barbearia no mapa" : "barbearias no mapa"}
-        {centro && " · centralizado no local escolhido"}
+        {comCoords.length > 0
+          ? `${comCoords.length} ${comCoords.length === 1 ? "barbearia no mapa" : "barbearias no mapa"}${centro ? " · centralizado no local escolhido" : ""}`
+          : "Minimapa — cadastre latitude e longitude no perfil da barbearia para ver marcadores."}
       </p>
-      <div className="h-[320px] w-full overflow-hidden rounded-xl border border-border/80 bg-muted/20 [&_.leaflet-marker-icon-user]:border-0">
+      <div className="h-[220px] w-full overflow-hidden rounded-xl border border-border/80 bg-muted/20 [&_.leaflet-marker-icon-user]:border-0">
         <MapContainer
           center={center}
           zoom={zoom}
           className="h-full w-full"
           scrollWheelZoom
-          style={{ minHeight: 320 }}
+          style={{ minHeight: 220 }}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -129,7 +118,7 @@ export function MapaBarbearias({
               <Popup>Você está aqui</Popup>
             </Marker>
           )}
-          <AjustarBounds barbearias={barbearias} centro={centro} />
+          {comCoords.length > 0 && <AjustarBounds barbearias={barbearias} centro={centro} />}
         </MapContainer>
       </div>
     </div>
