@@ -1,15 +1,20 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { BarbeariaCard } from "@/components/barbearia/BarbeariaCard";
-import { MapaBarbearias } from "@/components/barbearia/MapaBarbearias";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Scissors, Search, MapPin, Loader2 } from "lucide-react";
+import { Scissors, Search, MapPin, Loader2, Navigation } from "lucide-react";
+
+const MapaBarbearias = dynamic(
+  () => import("@/components/barbearia/MapaBarbearias").then((m) => m.MapaBarbearias),
+  { ssr: false, loading: () => <div className="h-[320px] animate-pulse rounded-xl border border-border/80 bg-muted/30" /> }
+);
 
 type BarbeariaItem = {
   id: string;
@@ -32,12 +37,28 @@ function dist(a: { lat: number; lng: number }, b: { lat: number; lng: number }) 
   return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 
+async function geocodeCidadeOuCep(query: string): Promise<{ lat: number; lng: number } | null> {
+  const q = `${query.trim()}, Brazil`;
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,
+    { headers: { "Accept-Language": "pt-BR" } }
+  );
+  const data = await res.json().catch(() => []);
+  const first = Array.isArray(data) ? data[0] : null;
+  if (!first?.lat || !first?.lon) return null;
+  return { lat: parseFloat(first.lat), lng: parseFloat(first.lon) };
+}
+
 export default function BarbeariasPage() {
   const [barbearias, setBarbearias] = useState<BarbeariaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [nome, setNome] = useState("");
   const [cidade, setCidade] = useState("");
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [centro, setCentro] = useState<{ lat: number; lng: number } | null>(null);
+  const [cidadeCep, setCidadeCep] = useState("");
+  const [geocodeLoading, setGeocodeLoading] = useState(false);
+  const [geocodeError, setGeocodeError] = useState<string | null>(null);
+  const [locLoading, setLocLoading] = useState(false);
 
   const fetchBarbearias = useCallback(() => {
     const params = new URLSearchParams();
@@ -57,23 +78,49 @@ export default function BarbeariasPage() {
     fetchBarbearias();
   }, [fetchBarbearias]);
 
-  useEffect(() => {
-    if (!navigator?.geolocation) return;
+  const handleCentralizarCidade = async () => {
+    if (!cidadeCep.trim()) return;
+    setGeocodeError(null);
+    setGeocodeLoading(true);
+    try {
+      const coords = await geocodeCidadeOuCep(cidadeCep);
+      if (coords) setCentro(coords);
+      else setGeocodeError("Local não encontrado. Tente cidade ou CEP.");
+    } catch {
+      setGeocodeError("Erro ao buscar local.");
+    } finally {
+      setGeocodeLoading(false);
+    }
+  };
+
+  const handleUsarMinhaLocalizacao = () => {
+    if (!navigator?.geolocation) {
+      setGeocodeError("Geolocalização não disponível neste navegador.");
+      return;
+    }
+    setGeocodeError(null);
+    setLocLoading(true);
     navigator.geolocation.getCurrentPosition(
-      (p) => setUserLocation({ lat: p.coords.latitude, lng: p.coords.longitude }),
-      () => {},
-      { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+      (p) => {
+        setCentro({ lat: p.coords.latitude, lng: p.coords.longitude });
+        setLocLoading(false);
+      },
+      () => {
+        setGeocodeError("Não foi possível obter sua localização. Verifique as permissões.");
+        setLocLoading(false);
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
     );
-  }, []);
+  };
 
   const barbeariasOrdenadas =
-    userLocation && barbearias.some((b) => b.latitude != null && b.longitude != null)
+    centro && barbearias.some((b) => b.latitude != null && b.longitude != null)
       ? [...barbearias].sort((a, b) => {
           if (a.latitude == null || a.longitude == null) return 1;
           if (b.latitude == null || b.longitude == null) return -1;
           return (
-            dist(userLocation, { lat: a.latitude, lng: a.longitude }) -
-            dist(userLocation, { lat: b.latitude, lng: b.longitude })
+            dist(centro, { lat: a.latitude, lng: a.longitude }) -
+            dist(centro, { lat: b.latitude, lng: b.longitude })
           );
         })
       : barbearias;
@@ -139,11 +186,63 @@ export default function BarbeariasPage() {
 
         {/* Mapa */}
         <section className="container mx-auto min-w-0 max-w-5xl px-4 py-6 sm:px-6">
-          <h2 className="text-heading-3 mb-4 flex items-center gap-2">
+          <h2 className="text-heading-3 mb-2 flex items-center gap-2">
             <MapPin className="h-5 w-5 text-primary" />
             Onde estamos
           </h2>
-          <MapaBarbearias barbearias={barbearias} userLocation={userLocation} />
+          <p className="mb-4 text-sm text-muted-foreground">
+            Digite uma cidade ou CEP para ver as barbearias mais próximas, ou use o botão para sua localização.
+          </p>
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+            <div className="flex-1 space-y-1">
+              <Label htmlFor="cidade-cep" className="text-caption font-medium text-muted-foreground">
+                Cidade ou CEP
+              </Label>
+              <Input
+                id="cidade-cep"
+                placeholder="Ex: Salvador, Centro São Paulo, 40000-000"
+                value={cidadeCep}
+                onChange={(e) => setCidadeCep(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCentralizarCidade()}
+                className="h-11 rounded-xl"
+              />
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleCentralizarCidade}
+              disabled={geocodeLoading || !cidadeCep.trim()}
+              className="h-11 rounded-xl shrink-0"
+            >
+              {geocodeLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Centralizar no mapa"
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleUsarMinhaLocalizacao}
+              disabled={locLoading}
+              className="h-11 rounded-xl shrink-0 gap-2"
+            >
+              {locLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Navigation className="h-4 w-4" />
+                  Usar minha localização
+                </>
+              )}
+            </Button>
+          </div>
+          {geocodeError && (
+            <p className="mb-3 text-sm text-destructive" role="alert">
+              {geocodeError}
+            </p>
+          )}
+          <MapaBarbearias barbearias={barbearias} centro={centro} />
         </section>
 
         {/* Lista */}
@@ -172,7 +271,7 @@ export default function BarbeariasPage() {
               <p className="mb-6 text-caption text-muted-foreground">
                 {barbeariasOrdenadas.length} {barbeariasOrdenadas.length === 1 ? "barbearia" : "barbearias"} encontrada
                 {barbeariasOrdenadas.length !== 1 ? "s" : ""}
-                {userLocation && barbearias.some((b) => b.latitude != null) && " (mais próximas primeiro)"}
+                {centro && barbearias.some((b) => b.latitude != null) && " (mais próximas primeiro)"}
               </p>
               <div className="grid min-w-0 gap-6 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
                 {barbeariasOrdenadas.map((b) => (

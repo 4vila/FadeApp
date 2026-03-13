@@ -1,7 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useMemo } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { MapPin } from "lucide-react";
+import Link from "next/link";
 
 type BarbeariaMapItem = {
   id: string;
@@ -10,114 +14,81 @@ type BarbeariaMapItem = {
   longitude: number | null;
 };
 
-// Tipagem mínima para a API do Google Maps (carregada via script no browser)
-interface GoogleMapsAPI {
-  maps: {
-    Map: new (el: HTMLElement, opts?: object) => { fitBounds: (b: unknown, p?: number) => void };
-    Marker: new (opts: object) => void;
-    LatLngBounds: new () => { extend: (p: { lat: number; lng: number }) => void };
-    SymbolPath: { CIRCLE: number };
-  };
-}
+const BRASIL_CENTRO: [number, number] = [-14.235, -51.9253];
+const ZOOM_PADRAO = 4;
+const ZOOM_CENTRO = 12;
 
-declare global {
-  interface Window {
-    google?: GoogleMapsAPI;
-    initMapBarbearias?: () => void;
-  }
+// Corrige ícone padrão do Leaflet em bundlers (Next.js)
+const iconDefault = typeof window !== "undefined"
+  ? L.icon({
+      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+      iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    })
+  : undefined;
+
+const iconUser = typeof window !== "undefined"
+  ? L.divIcon({
+      className: "leaflet-marker-icon-user",
+      html: `<div style="width:20px;height:20px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.4);"></div>`,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+    })
+  : undefined;
+
+function AjustarBounds({
+  barbearias,
+  centro,
+}: {
+  barbearias: BarbeariaMapItem[];
+  centro: { lat: number; lng: number } | null;
+}) {
+  const map = useMap();
+  const comCoords = barbearias.filter((b) => b.latitude != null && b.longitude != null);
+  React.useEffect(() => {
+    if (comCoords.length === 0) return;
+    const bounds = L.latLngBounds(
+      comCoords.map((b) => [b.latitude!, b.longitude!] as [number, number])
+    );
+    if (centro) bounds.extend([centro.lat, centro.lng]);
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+  }, [map, centro, barbearias]);
+  return null;
 }
 
 export function MapaBarbearias({
   barbearias,
-  userLocation,
+  centro,
 }: {
   barbearias: BarbeariaMapItem[];
-  userLocation: { lat: number; lng: number } | null;
+  centro: { lat: number; lng: number } | null;
 }) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const key = typeof window !== "undefined" ? process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY : "";
+  const comCoords = useMemo(
+    () =>
+      barbearias.filter((b) => b.latitude != null && b.longitude != null) as (BarbeariaMapItem & {
+        latitude: number;
+        longitude: number;
+      })[],
+    [barbearias]
+  );
 
-  const comCoords = barbearias.filter((b) => b.latitude != null && b.longitude != null) as (BarbeariaMapItem & {
-    latitude: number;
-    longitude: number;
-  })[];
+  const [center, zoom] = useMemo((): [[number, number], number] => {
+    if (centro) return [[centro.lat, centro.lng], ZOOM_CENTRO];
+    if (comCoords.length > 0) return [[comCoords[0].latitude, comCoords[0].longitude], ZOOM_CENTRO];
+    return [BRASIL_CENTRO, ZOOM_PADRAO];
+  }, [centro, comCoords]);
 
-  useEffect(() => {
-    if (!key) {
-      setError("Mapa: configure NEXT_PUBLIC_GOOGLE_MAPS_API_KEY no .env");
-      return;
-    }
-    if (window.google?.maps) {
-      setScriptLoaded(true);
-      return;
-    }
-    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
-      window.initMapBarbearias = () => setScriptLoaded(true);
-      return () => { delete window.initMapBarbearias; };
-    }
-    window.initMapBarbearias = () => setScriptLoaded(true);
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&callback=initMapBarbearias`;
-    script.async = true;
-    script.defer = true;
-    script.onerror = () => setError("Falha ao carregar o mapa.");
-    document.head.appendChild(script);
-    return () => {
-      delete window.initMapBarbearias;
-    };
-  }, [key]);
-
-  useEffect(() => {
-    if (!scriptLoaded || !window.google?.maps || !mapRef.current || !key) return;
-
-    const center = userLocation ?? (comCoords[0] ? { lat: comCoords[0].latitude, lng: comCoords[0].longitude } : { lat: -14.235, lng: -51.9253 });
-    const map = new window.google.maps.Map(mapRef.current, {
-      center,
-      zoom: userLocation ? 13 : comCoords.length ? 12 : 4,
-      mapTypeControl: true,
-      fullscreenControl: true,
-      zoomControl: true,
-    });
-
-    comCoords.forEach((b) => {
-      new window.google!.maps.Marker({
-        position: { lat: b.latitude, lng: b.longitude },
-        map,
-        title: b.name,
-      });
-    });
-
-    if (userLocation) {
-      new window.google.maps.Marker({
-        position: userLocation,
-        map,
-        title: "Você está aqui",
-        icon: {
-          path: window.google.maps.SymbolPath.CIRCLE,
-          scale: 10,
-          fillColor: "#3b82f6",
-          fillOpacity: 1,
-          strokeColor: "#fff",
-          strokeWeight: 2,
-        },
-      });
-    }
-
-    if (comCoords.length > 1 || userLocation) {
-      const bounds = new window.google.maps.LatLngBounds();
-      comCoords.forEach((b) => bounds.extend({ lat: b.latitude, lng: b.longitude }));
-      if (userLocation) bounds.extend(userLocation);
-      map.fitBounds(bounds, 50);
-    }
-  }, [scriptLoaded, key, userLocation, comCoords.length]);
-
-  if (error) {
+  if (comCoords.length === 0) {
     return (
       <div className="rounded-xl border border-border/80 bg-muted/30 p-6 text-center">
         <MapPin className="mx-auto h-10 w-10 text-muted-foreground" />
-        <p className="mt-2 text-sm text-muted-foreground">{error}</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Nenhuma barbearia com endereço no mapa. Cadastre latitude e longitude no perfil da barbearia.
+        </p>
       </div>
     );
   }
@@ -126,9 +97,41 @@ export function MapaBarbearias({
     <div className="space-y-2">
       <p className="text-sm font-medium text-muted-foreground">
         {comCoords.length} {comCoords.length === 1 ? "barbearia no mapa" : "barbearias no mapa"}
-        {userLocation && " · centralizado perto de você"}
+        {centro && " · centralizado no local escolhido"}
       </p>
-      <div ref={mapRef} className="h-[320px] w-full rounded-xl border border-border/80 bg-muted/20" aria-label="Mapa de barbearias" />
+      <div className="h-[320px] w-full overflow-hidden rounded-xl border border-border/80 bg-muted/20 [&_.leaflet-marker-icon-user]:border-0">
+        <MapContainer
+          center={center}
+          zoom={zoom}
+          className="h-full w-full"
+          scrollWheelZoom
+          style={{ minHeight: 320 }}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {comCoords.map((b) => (
+            <Marker
+              key={b.id}
+              position={[b.latitude, b.longitude]}
+              icon={iconDefault}
+            >
+              <Popup>
+                <Link href={`/barbearias/${b.id}`} className="font-medium text-primary hover:underline">
+                  {b.name}
+                </Link>
+              </Popup>
+            </Marker>
+          ))}
+          {centro && (
+            <Marker position={[centro.lat, centro.lng]} icon={iconUser}>
+              <Popup>Você está aqui</Popup>
+            </Marker>
+          )}
+          <AjustarBounds barbearias={barbearias} centro={centro} />
+        </MapContainer>
+      </div>
     </div>
   );
 }
