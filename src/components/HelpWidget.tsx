@@ -13,9 +13,12 @@ const WHATSAPP_MSG = encodeURIComponent("Olá! Preciso de ajuda com o FadeApp.")
 
 const FAQS = [
   { q: "Como agendar um horário?", a: "Acesse Barbearias, escolha uma e clique em Agendar. Faça login se necessário." },
-  { q: "Como cancelar ou remarcar?", a: "Na sua área (Minha área ou painel), abra o agendamento e use Cancelar ou Editar." },
+  {
+    q: "Como cancelar ou remarcar?",
+    a: "Cliente: em Minha área, abra o agendamento e use Cancelar. Para outro horário, cancele e agende de novo em Barbearias. Barbearia: no painel, em Agendamentos, use Editar ou Cancelar.",
+  },
   { q: "Onde vejo meus agendamentos?", a: "Cliente: Minha área. Profissional: Minha agenda. Dono: Painel > Agendamentos." },
-  { q: "Esqueci minha senha", a: "Entre em contato pelo WhatsApp para redefinir sua senha." },
+  { q: "Esqueci minha senha", a: "Entre em contato pelo WhatsApp (botão abaixo) para redefinir sua senha." },
 ];
 
 export function HelpWidget() {
@@ -26,6 +29,15 @@ export function HelpWidget() {
   const filteredFaqs = search.trim()
     ? FAQS.filter((f) => f.q.toLowerCase().includes(search.toLowerCase()))
     : FAQS;
+
+  const linkAgendamentos =
+    session?.user?.role === "cliente"
+      ? "/cliente/dashboard"
+      : session?.user?.role === "profissional"
+        ? "/profissional/dashboard"
+        : session?.user?.role === "barbearia" || session?.user?.role === "admin"
+          ? "/barbearia/dashboard/agendamentos"
+          : "/login";
 
   return (
     <>
@@ -77,23 +89,15 @@ export function HelpWidget() {
                     className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2 text-sm hover:bg-muted/50"
                     onClick={() => setOpen(false)}
                   >
-                    Como agendar um horário?
+                    Agendar horário
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </Link>
                   <Link
-                    href="/contato"
+                    href={linkAgendamentos}
                     className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2 text-sm hover:bg-muted/50"
                     onClick={() => setOpen(false)}
                   >
-                    Como cancelar ou remarcar?
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </Link>
-                  <Link
-                    href="/contato"
-                    className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2 text-sm hover:bg-muted/50"
-                    onClick={() => setOpen(false)}
-                  >
-                    Esqueci minha senha
+                    {session?.user ? "Ver ou cancelar meus agendamentos" : "Fazer login (ver agendamentos)"}
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </Link>
                 </div>
@@ -132,7 +136,7 @@ export function HelpWidget() {
                   onClick={() => setOpen(false)}
                 >
                   <MessageCircle className="mr-2 h-4 w-4" />
-                  Enviar mensagem no WhatsApp
+                  Falar com suporte no WhatsApp
                 </a>
               </Button>
             </div>
