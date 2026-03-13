@@ -93,7 +93,7 @@ export default function BarbeariasPage() {
     }
   };
 
-  const handleUsarMinhaLocalizacao = () => {
+  const handleUsarMinhaLocalizacao = useCallback(() => {
     if (!navigator?.geolocation) {
       setGeocodeError("Geolocalização não disponível neste navegador.");
       return;
@@ -111,7 +111,12 @@ export default function BarbeariasPage() {
       },
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
     );
-  };
+  }, []);
+
+  // Tenta usar a localização do usuário automaticamente ao entrar na página.
+  useEffect(() => {
+    handleUsarMinhaLocalizacao();
+  }, [handleUsarMinhaLocalizacao]);
 
   const barbeariasOrdenadas =
     centro && barbearias.some((b) => b.latitude != null && b.longitude != null)

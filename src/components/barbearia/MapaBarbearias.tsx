@@ -14,10 +14,10 @@ type BarbeariaMapItem = {
 };
 
 const BRASIL_CENTRO: [number, number] = [-14.235, -51.9253];
-const ZOOM_PADRAO = 4;
-const ZOOM_CENTRO = 12;
+const ZOOM_PADRAO = 6;
+const ZOOM_CENTRO = 13;
 
-// Corrige ícone padrão do Leaflet em bundlers (Next.js)
+// Ícone padrão do Leaflet (fallback caso o custom falhe)
 const iconDefault = typeof window !== "undefined"
   ? L.icon({
       iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -30,12 +30,35 @@ const iconDefault = typeof window !== "undefined"
     })
   : undefined;
 
+// Ícone da posição do usuário
 const iconUser = typeof window !== "undefined"
   ? L.divIcon({
       className: "leaflet-marker-icon-user",
       html: `<div style="width:20px;height:20px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.4);"></div>`,
       iconSize: [20, 20],
       iconAnchor: [10, 10],
+    })
+  : undefined;
+
+// Ícone customizado para barbearias (bolinha escura com tesoura, inspirado no logo)
+const iconBarbearia = typeof window !== "undefined"
+  ? L.divIcon({
+      className: "leaflet-marker-icon-barbeartime",
+      html: `<div style="
+        width:26px;height:26px;
+        border-radius:9999px;
+        background:#020617;
+        color:#f97316;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:15px;
+        box-shadow:0 8px 18px rgba(15,23,42,0.55);
+      ">
+        ✂
+      </div>`,
+      iconSize: [26, 26],
+      iconAnchor: [13, 26],
     })
   : undefined;
 
@@ -93,7 +116,7 @@ export function MapaBarbearias({
           center={center}
           zoom={zoom}
           className="h-full w-full"
-          scrollWheelZoom
+          scrollWheelZoom={false}
           style={{ minHeight: 220 }}
         >
           <TileLayer
@@ -104,7 +127,7 @@ export function MapaBarbearias({
             <Marker
               key={b.id}
               position={[b.latitude, b.longitude]}
-              icon={iconDefault}
+              icon={iconBarbearia ?? iconDefault}
             >
               <Popup>
                 <Link href={`/barbearias/${b.id}`} className="font-medium text-primary hover:underline">
