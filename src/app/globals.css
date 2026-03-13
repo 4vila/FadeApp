@@ -141,3 +141,11 @@
     flex-shrink: 0;
   }
 }
+
+/* Leaflet: garantir que o mapa respeite o cabeçalho e outros elementos fixos */
+.leaflet-container,
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 0 !important;
+}
