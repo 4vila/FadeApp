@@ -15,7 +15,7 @@ type BarbeariaMapItem = {
 
 const BRASIL_CENTRO: [number, number] = [-14.235, -51.9253];
 const ZOOM_PADRAO = 6;
-const ZOOM_CENTRO = 13;
+const ZOOM_CENTRO = 15;
 
 // Ícone padrão do Leaflet (fallback caso o custom falhe)
 const iconDefault = typeof window !== "undefined"
@@ -72,11 +72,12 @@ function AjustarBounds({
   const map = useMap();
   const comCoords = barbearias.filter((b) => b.latitude != null && b.longitude != null);
   React.useEffect(() => {
-    if (comCoords.length === 0) return;
+    // Se já temos um centro definido (ex.: localização do usuário ou CEP),
+    // não ajustamos o zoom automaticamente para não afastar o mapa.
+    if (comCoords.length === 0 || centro) return;
     const bounds = L.latLngBounds(
       comCoords.map((b) => [b.latitude!, b.longitude!] as [number, number])
     );
-    if (centro) bounds.extend([centro.lat, centro.lng]);
     map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
   }, [map, centro, barbearias]);
   return null;

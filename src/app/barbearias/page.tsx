@@ -102,7 +102,13 @@ export default function BarbeariasPage() {
     setLocLoading(true);
     navigator.geolocation.getCurrentPosition(
       (p) => {
-        setCentro({ lat: p.coords.latitude, lng: p.coords.longitude });
+        const coords = { lat: p.coords.latitude, lng: p.coords.longitude, ts: Date.now() };
+        setCentro({ lat: coords.lat, lng: coords.lng });
+        try {
+          window.localStorage.setItem("bt_geo_centro", JSON.stringify(coords));
+        } catch {
+          // ignore storage errors
+        }
         setLocLoading(false);
       },
       () => {
@@ -113,8 +119,27 @@ export default function BarbeariasPage() {
     );
   }, []);
 
-  // Tenta usar a localização do usuário automaticamente ao entrar na página.
+  // Ao entrar na página, tenta usar a última localização salva.
+  // Se não houver (ou estiver muito antiga), chama geolocalização.
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const raw = window.localStorage.getItem("bt_geo_centro");
+      if (raw) {
+        const parsed = JSON.parse(raw) as { lat: number; lng: number; ts?: number };
+        if (typeof parsed.lat === "number" && typeof parsed.lng === "number") {
+          const isOld = parsed.ts && Date.now() - parsed.ts > 24 * 60 * 60 * 1000; // 24h
+          if (!isOld) {
+            setCentro({ lat: parsed.lat, lng: parsed.lng });
+            return; // não chama geolocalização novamente
+          }
+        }
+      }
+    } catch {
+      // se der erro no parse, ignora e cai para geolocalização normal
+    }
+
     handleUsarMinhaLocalizacao();
   }, [handleUsarMinhaLocalizacao]);
 
