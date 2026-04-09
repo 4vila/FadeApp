@@ -62,8 +62,10 @@ cp .env.example .env.local
 Em `.env.local`:
 
 - `DATABASE_URL="postgresql://estetica:estetica@localhost:5432/estetica"`
-- `NEXTAUTH_SECRET` — gere com `openssl rand -base64 32`
+- `AUTH_SECRET` e/ou `NEXTAUTH_SECRET` — gere com `openssl rand -base64 32` ou `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
 - `NEXTAUTH_URL="http://localhost:3000"`
+
+O Next.js prioriza `.env.local` sobre `.env`; se o login acusar falta de `AUTH_SECRET`, confira se essas variáveis estão em `.env.local` e reinicie o `npm run dev`.
 
 ### 4. Migrações e seed
 
@@ -113,11 +115,11 @@ Acesse [http://localhost:3000](http://localhost:3000).
 
 ## Deploy (Vercel + Supabase)
 
-- **Supabase:** Crie um projeto e use a connection string do PostgreSQL como `DATABASE_URL` na Vercel.
-- **Vercel:** Conecte o repositório, defina as variáveis de ambiente (`DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL` com a URL do app) e faça o deploy.
-- **Migrações:** Rode `npx prisma migrate deploy` localmente com `DATABASE_URL` apontando para o Supabase (ou use o mesmo em CI) para criar as tabelas em produção.
+- **Supabase:** Connection string do PostgreSQL como `DATABASE_URL` na Vercel.
+- **Vercel:** Conecte o repositório e defina **todas** as variáveis listadas em [`docs/VERCEL_ENV.md`](docs/VERCEL_ENV.md) — em especial `AUTH_SECRET`, `NEXTAUTH_URL` (URL HTTPS do deploy) e `DATABASE_URL`.
+- **Migrações:** Rode `npx prisma migrate deploy` com `DATABASE_URL` do Supabase antes de usar o app em produção.
 
-Consulte `docs/SUPABASE_VERCEL.md` (se existir) para o passo a passo detalhado.
+Se o login retornar erro de configuração em produção, falta `AUTH_SECRET` no painel da Vercel ou `NEXTAUTH_URL` está diferente da URL real do site.
 
 ## Scripts
 
