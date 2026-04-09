@@ -4,10 +4,11 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 /**
- * Não defina `secret` aqui com process.env — o Next pode embutir `undefined` no build.
- * O NextAuth aplica AUTH_SECRET / NEXTAUTH_SECRET em runtime via setEnvDefaults (obrigatório na Vercel).
+ * Config como função assíncrona: `setEnvDefaults` corre em cada pedido, não só ao importar
+ * o módulo. Assim AUTH_SECRET / NEXTAUTH_SECRET lidos na Vercel em runtime não ficam
+ * substituídos por `undefined` no bundle do build.
  */
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, signIn, signOut, auth } = NextAuth(async () => ({
   trustHost: true,
   providers: [
     Credentials({
@@ -63,4 +64,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/login",
     error: "/login",
   },
-});
+}));

@@ -42,7 +42,7 @@ export function FormLogin() {
     if (result?.error) {
       setError(
         result.error === "Configuration"
-          ? "Erro de configuração do servidor. Defina AUTH_SECRET no .env e reinicie."
+          ? "Erro de configuração do servidor. Em desenvolvimento: defina AUTH_SECRET no .env.local e reinicie. Em produção (Vercel): Project → Settings → Environment Variables → AUTH_SECRET e redeploy."
           : "Email ou senha incorretos."
       );
       return;

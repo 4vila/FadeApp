@@ -12,7 +12,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   const configErrorMsg =
     authError === "Configuration"
-      ? "Erro de configuração do servidor. Verifique se AUTH_SECRET (ou NEXTAUTH_SECRET) está definido no .env e reinicie o servidor."
+      ? "Erro de configuração do servidor. Em desenvolvimento: AUTH_SECRET (ou NEXTAUTH_SECRET) no .env.local. Em produção: Vercel → Environment Variables → AUTH_SECRET e redeploy."
       : authError === "AccessDenied"
         ? "Acesso negado."
         : authError
